@@ -7,18 +7,18 @@ module.exports = {
 
     // API
     api: {
-      host: undefined,
-      username: undefined,
-      password: undefined,
+      host: "magazineluiza.atlassian.net",
+      username: "alexsander.santos",
+      password: "whdesign"
     },
 
     // Jira base web URL
     // Set to the base URL for your Jira account
-    baseUrl: 'https://atlassian.net',
+    baseUrl: 'https://magazineluiza.atlassian.net',
 
     // Regex used to match the issue ticket key
     // Use capture group one to isolate the key text within surrounding characters (if needed).
-    ticketIDPattern: /\[([A-Z]+\-[0-9]+)\]/i,
+    ticketIDPattern: /((?!([A-Z0-9a-z]{1,10})-?$)[A-Z]{1}[A-Z0-9]+-\d+)/i,
 
     // Status names that mean the ticket is approved.
     approvalStatus: ['Done', 'Closed', 'Accepted'],
@@ -42,7 +42,7 @@ module.exports = {
   slack: {
 
     // API key string
-    apiKey: undefined,
+    apiKey: 'xoxp-2151854096-275237338454-324661711060-9219e322adb319d9d4eac6e70671fc83',
 
     // The channel that the changelog will be posted in, when you use the `--slack` flag.
     // This can be a channel string ('#mychannel`) or a channel ID.
@@ -119,5 +119,11 @@ Pending Approval
 <% }); -%>
 <% }); -%>
 <% if (!tickets.pendingByOwner.length) {%> ~ None. Yay! ~ <% } %>
+<% if (committers.length) {%> 
+  Committers: <%= committers.length -%>
+  <% committers.forEach((committer) => { %>
+    * <%= committer.name %> (<%= '@'+committer.username %>)
+  <% }); -%>
+<% } %>
 `
 };

@@ -101,6 +101,19 @@ async function runProgram() {
       releaseVersions: jira.releaseVersions,
     };
 
+    data.committers = []
+    commitLogs.forEach(commit => {
+      /* get the user from slack or just the full name */
+      let username = (
+        commit.slackUser ?
+        commit.slackUser.profile.display_name :
+        commit.email
+      )
+      let name = commit.authorName
+      data.committers.push({ username, name } )
+    })
+    data.committers = _.uniqBy(data.committers, 'username')
+
     // Render and output template
     const entitles = new Entities.AllHtmlEntities();
     const changelogMessage = ejs.render(config.template, data);
@@ -188,6 +201,8 @@ function transformCommitLogs(config, logs) {
     approvalStatus = [approvalStatus];
   }
 
+  const commiters = {};
+
   // Tickets and their commits
   const ticketHash = logs.reduce((all, log) => {
     log.tickets.forEach((ticket) => {
@@ -216,7 +231,6 @@ function transformCommitLogs(config, logs) {
     }
   });
   const pendingByOwner = _.sortBy(Object.values(reporters), item => item.user);
-
 
   // Output filtered data
   return {
