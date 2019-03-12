@@ -98,8 +98,8 @@ Release version: <%= jira.releaseVersions[0].name -%>
 Jira Tickets
 ---------------------
 <% tickets.all.forEach((ticket) => { %>
-  * <<%= ticket.fields.issuetype.name %>> - <%- ticket.fields.summary %>
-    [<%= ticket.key %>] <%= jira.baseUrl + '/browse/' + ticket.key %>
+  #### <%= ticket.fields.issuetype.name %>
+  * [<%= ticket.key %>](<%= jira.baseUrl + '/browse/' + ticket.key %>) <%- ticket.fields.summary %>
 <% }); -%>
 <% if (!tickets.all.length) {%> ~ None ~ <% } %>
 
@@ -110,20 +110,14 @@ Other Commits
 <% }); -%>
 <% if (!commits.noTickets.length) {%> ~ None ~ <% } %>
 
-Pending Approval
----------------------
-<% tickets.pendingByOwner.forEach((owner) => { %>
-<%= (owner.slackUser) ? '@'+owner.slackUser.name : owner.email %>
-<% owner.tickets.forEach((ticket) => { -%>
-  * <%= jira.baseUrl + '/browse/' + ticket.key %>
-<% }); -%>
-<% }); -%>
 <% if (!tickets.pendingByOwner.length) {%> ~ None. Yay! ~ <% } %>
-<% if (committers.length) {%> 
+<% if (committers.length) {%>
   Committers: <%= committers.length -%>
+
   <% committers.forEach((committer) => { %>
     * <%= committer.name %> (<%= '@'+committer.username %>)
   <% }); -%>
+
 <% } %>
 `
 };

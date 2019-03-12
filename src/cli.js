@@ -11,6 +11,7 @@ import _ from 'lodash';
 import ejs from 'ejs'
 import path from 'path';
 import Slack from './Slack';
+import Utils from './Utils';
 import Entities from 'html-entities';
 
 import {readConfigFile, CONF_FILENAME} from './Config';
@@ -116,6 +117,12 @@ async function runProgram() {
 
     // Render and output template
     const entitles = new Entities.AllHtmlEntities();
+    // console.log('data: ', data.tickets.all);
+    for (var ticket in data.tickets.all) {
+      let issueType = _.get(data.tickets.all[ticket], 'fields.issuetype.name')
+      data.tickets.all[ticket].fields.issuetype.name = Utils.mapIssueTypes(issueType)
+      console.log('Utils.mapIssueTypes(issueType): ', Utils.mapIssueTypes(issueType));
+    }
     const changelogMessage = ejs.render(config.template, data);
     console.log(entitles.decode(changelogMessage));
 
@@ -201,8 +208,6 @@ function transformCommitLogs(config, logs) {
     approvalStatus = [approvalStatus];
   }
 
-  const commiters = {};
-
   // Tickets and their commits
   const ticketHash = logs.reduce((all, log) => {
     log.tickets.forEach((ticket) => {
@@ -212,8 +217,8 @@ function transformCommitLogs(config, logs) {
     });
     return all;
   }, {});
-  let ticektList = _.sortBy(Object.values(ticketHash), ticket => ticket.fields.issuetype.name);
-  let pendingTickets = ticektList.filter(ticket => !approvalStatus.includes(ticket.fields.status.name));
+  let ticheckList = _.sortBy(Object.values(ticketHash), ticket => ticket.fields.issuetype.name);
+  let pendingTickets = ticheckList.filter(ticket => !approvalStatus.includes(ticket.fields.status.name));
 
   // Pending ticket owners and their tickets/commits
   const reporters = {};
@@ -241,8 +246,8 @@ function transformCommitLogs(config, logs) {
     },
     tickets: {
       pendingByOwner,
-      all: ticektList,
-      approved: ticektList.filter(ticket => approvalStatus.includes(ticket.fields.status.name)),
+      all: ticheckList,
+      approved: ticheckList.filter(ticket => approvalStatus.includes(ticket.fields.status.name)),
       pending: pendingTickets
     }
   }
