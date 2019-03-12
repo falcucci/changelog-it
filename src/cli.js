@@ -117,11 +117,18 @@ async function runProgram() {
 
     // Render and output template
     const entitles = new Entities.AllHtmlEntities();
-    // console.log('data: ', data.tickets.all);
+    /**
+     * map all the Jira issue types
+     */
     for (var ticket in data.tickets.all) {
-      let issueType = _.get(data.tickets.all[ticket], 'fields.issuetype.name')
-      data.tickets.all[ticket].fields.issuetype.name = Utils.mapIssueTypes(issueType)
-      console.log('Utils.mapIssueTypes(issueType): ', Utils.mapIssueTypes(issueType));
+      if (_.has(data.tickets.all[ticket], 'fields.issuetype.name')) {
+        /**
+         * assign the new names here
+         */
+        data.tickets.all[ticket].fields.issuetype.name = Utils.mapIssueTypes(
+          _.get(data.tickets.all[ticket], 'fields.issuetype.name')
+        )
+      }
     }
     const changelogMessage = ejs.render(config.template, data);
     console.log(entitles.decode(changelogMessage));
