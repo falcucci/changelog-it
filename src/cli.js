@@ -224,8 +224,13 @@ function transformCommitLogs(config, logs) {
     });
     return all;
   }, {});
-  let ticheckList = _.sortBy(Object.values(ticketHash), ticket => ticket.fields.issuetype.name);
-  let pendingTickets = ticheckList.filter(ticket => !approvalStatus.includes(ticket.fields.status.name));
+  let ticketList = _.sortBy(
+    Object.values(ticketHash),
+    ticket => ticket.fields.issuetype.name
+  );
+  let pendingTickets = ticketList.filter(
+    ticket => !approvalStatus.includes(ticket.fields.status.name)
+  );
 
   // Pending ticket owners and their tickets/commits
   const reporters = {};
@@ -253,8 +258,8 @@ function transformCommitLogs(config, logs) {
     },
     tickets: {
       pendingByOwner,
-      all: ticheckList,
-      approved: ticheckList.filter(ticket => approvalStatus.includes(ticket.fields.status.name)),
+      all: ticketList,
+      approved: ticketList.filter(ticket => approvalStatus.includes(ticket.fields.status.name)),
       pending: pendingTickets
     }
   }
