@@ -91,6 +91,8 @@ async function runProgram() {
     const range = getRangeObject(config);
     const commitLogs = await source.getCommitLogs(gitPath, range);
     const changelog = await jira.generate(commitLogs, program.release);
+    const remoteUrl = await source.getRemoteUrl()
+    const projectName = await source.getProjectName()
 
     // Template data template
     let data = await transformCommitLogs(config, changelog);
@@ -135,7 +137,7 @@ async function runProgram() {
 
     // Post to slack
     if (program.slack) {
-      postToSlack(config, data, changelogMessage);
+      postToSlack(config, data, changelogMessage, program.release, projectName);
     }
   } catch(e) {
     console.error('Error: ', e.stack);
@@ -149,8 +151,16 @@ async function runProgram() {
  * @param {Object} config - The configuration object
  * @param {Object} data - The changelog data object.
  * @param {String} changelogMessage - The changelog message
+ * @param {String} releaseVersion - The name of the release version to create.
+ * @param {String} projectName - The name of the current project
  */
-async function postToSlack(config, data, changelogMessage) {
+async function postToSlack(
+  config,
+  data,
+  changelogMessage,
+  releaseVersion,
+  projectName
+) {
   const slack = new Slack(config);
 
   if (!slack.isEnabled() || !config.slack.channel) {
@@ -163,11 +173,18 @@ async function postToSlack(config, data, changelogMessage) {
 
     // Transform for slack
     if (typeof config.transformForSlack == 'function') {
-      changelogMessage = await Promise.resolve(config.transformForSlack(changelogMessage, data));
+      changelogMessage = await Promise.resolve(
+        config.transformForSlack(changelogMessage, data)
+      );
     }
 
     // Post to slack
-    await slack.postMessage(changelogMessage, config.slack.channel);
+    await slack.postMessage(
+      changelogMessage,
+      config.slack.channel,
+      releaseVersion,
+      projectName
+    );
     console.log('Done');
 
   } catch(e) {

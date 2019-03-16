@@ -95,13 +95,19 @@ module.exports = {
   // Learn more: http://ejs.co/
   template:
 `<% if (jira.releaseVersions && jira.releaseVersions.length) {  %>
-Release version: <%= jira.releaseVersions[0].name -%>
+#### RELEASES
 <% jira.releaseVersions.forEach((release) => { %>
-  * <%= release.projectKey %>: <%= jira.baseUrl + '/projects/' + release.projectKey + '/versions/' + release.id -%>
+  [jira](<%= jira.baseUrl + '/projects/' + release.projectKey + '/versions/' + release.id -%>) /
 <% }); -%>
-<% } %>
+<% } %> [gitlab](https://gitlab.luizalabs.com/luizalabs/mobile-vendas-api/tags/<%= jira.releaseVersions[0].name -%>)
 
-## CHANGELOG
+Itaque his sapiens semper vacabit. Quis Aristidem non mortuum diligit? An tu me de L. Cur deinde Metrodori liberos commendas? Negat enim summo bono afferre incrementum diem. Summus dolor plures dies manere non potest?
+
+----------
+
+[Full Changelog](https://gitlab.luizalabs.com/luizalabs/mobile-vendas-api/compare/v5.8.22...v5.8.23)
+
+# Changelog
 ---------------------
 
 <% tickets.all.forEach((ticket) => { %>
@@ -110,9 +116,17 @@ Release version: <%= jira.releaseVersions[0].name -%>
 <% }); -%>
 <% if (!tickets.all.length) {%> ~ None ~ <% } %>
 
+----------
+
+  #### Merged Requests
+
+  * [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
+
+----------
+
 <% if (!tickets.pendingByOwner.length) {%> ~ None. Yay! ~ <% } %>
 <% if (committers.length) {%>
-  Committers: <%= committers.length -%>
+  #### Committers: <%= committers.length -%>
 
   <% committers.forEach((committer) => { %>
     * <%= committer.name %> (<%= '@'+committer.username %>)

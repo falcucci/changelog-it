@@ -41,6 +41,22 @@ export default class SourceControl {
     this.slack = new Slack(config);
   }
 
+  async getProjectName() {
+    const baseDirSplited = git()._baseDir.split('/')
+    return baseDirSplited[baseDirSplited.length-1]
+  }
+
+  getRemoteUrl() {
+    return new Promise((resolve, reject) => {
+      git().listRemote(['--get-url'], (err, response) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(response)
+      })
+    })
+  }
+
   /**
    * Return commit logs for a range.
    *

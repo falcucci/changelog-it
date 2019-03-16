@@ -142,10 +142,11 @@ export default class Slack {
    * @param {String} text - The message to send to slack
    * @param {String} channel - The slack channel ID to send the message to.
    * (i.e. `#engineering`)
-   *
+   * @param {String} releaseVersion - The name of the release version to create.
+   * @param {String} projectName - The name of the project.
    * @return {Promise} Resolves when message has sent
    */
-  postMessage(content, channels) {
+  postMessage(content, channels, releaseVersion, projectName) {
     // No message
     if (!content || !content.length) {
       return Promise.reject('No content to send to slack.');
@@ -168,9 +169,9 @@ export default class Slack {
     function sendChunk(content) {
       return self.api('files.upload', 'POST',
         {
-          title: 'changelog v1',
+          title: `${projectName}-${releaseVersion}`,
           content,
-          filename: 'test',
+          filename: `${projectName}-${releaseVersion}`,
           filetype: 'post',
           channels,
           as_user: true,
