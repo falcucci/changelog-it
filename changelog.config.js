@@ -21,10 +21,16 @@ module.exports = {
     ticketIDPattern: /((?!([A-Z0-9a-z]{1,10})-?$)[A-Z]{1}[A-Z0-9]+-\d+)/i,
 
     // Status names that mean the ticket is approved.
-    approvalStatus: ['Done', 'Closed', 'Accepted'],
+    approvalStatus: [
+      'Done',
+      'Closed',
+      'Accepted'
+    ],
 
     // Tickets to exclude from the changelog, by type name
-    excludeIssueTypes: ['Sub-task'],
+    excludeIssueTypes: [
+      'Sub-task'
+    ],
 
     // Tickets to include in changelog, by type name.
     // If this is defined, `excludeIssueTypes` is ignored.
@@ -46,7 +52,7 @@ module.exports = {
 
     // The channel that the changelog will be posted in, when you use the `--slack` flag.
     // This can be a channel string ('#mychannel`) or a channel ID.
-    channel: undefined,
+    channel: '',
 
     // The name to give the slack bot user, when posting the changelog
     username: "Changelog Bot",

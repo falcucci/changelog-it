@@ -38,7 +38,7 @@ export default class Slack {
    */
   api(endpoint, method='GET', body=undefined) {
     const headers = {};
-    const cachable = (method.toUpperCase() == 'GET');
+    const cachable = (method.toUpperCase() === 'GET');
     const url = `${API_ROOT}/${endpoint}?token=${this.config.slack.apiKey}`;
 
     if (!this.isEnabled()) {
@@ -112,18 +112,22 @@ export default class Slack {
   findUser(email, name) {
     return this.getSlackUsers()
     .then((users) => {
-
       // Try by email first (more exact match)
       email = email.toLowerCase();
-      let found = users.find(u => (u.profile.email && u.profile.email.toLowerCase() === email));
+      let found = users.find(
+        u => u.profile.email && u.profile.email.toLowerCase() === email
+      );
 
       // Fallback to name
       if (!found && name) {
         name = name.toLowerCase();
-        found = users.find((u) => {
+        found = users.find(u => {
           const profile = u.profile;
-          return (profile.real_name && profile.real_name.toLowerCase() === name) ||
-                 (profile.real_name_normalized && profile.real_name_normalized.toLowerCase() === name);
+          return (
+            (profile.real_name && profile.real_name.toLowerCase() === name) ||
+            (profile.real_name_normalized &&
+              profile.real_name_normalized.toLowerCase() === name)
+          );
         });
       }
 
@@ -136,15 +140,15 @@ export default class Slack {
    * If the message is longer than slack's limit, it will be cut into multiple messages.
    *
    * @param {String} text - The message to send to slack
-   * @param {String} channel - The slack channel ID to send the message to. (i.e. `#engineering`)
+   * @param {String} channel - The slack channel ID to send the message to.
+   * (i.e. `#engineering`)
    *
    * @return {Promise} Resolves when message has sent
    */
-  postMessage(text, channel) {
-
+  postMessage(content, channels) {
     // No message
-    if (!text || !text.length) {
-      return Promise.reject('No text to send to slack.');
+    if (!content || !content.length) {
+      return Promise.reject('No content to send to slack.');
     }
 
     // No slack integration
@@ -152,21 +156,26 @@ export default class Slack {
       return Promise.resolve({});
     }
 
-    const chunks = this.splitUpMessage(text);
+    const chunks = this.splitUpMessage(content);
 
     // Send all message chunks
-    const sendPromise = chunks.reduce((promise, text) => {
-      return promise.then(() => sendChunk(text));
+    const sendPromise = chunks.reduce((promise, content) => {
+      return promise.then(() => sendChunk(content));
     }, Promise.resolve());
 
-    // Sends a single message to the channel and returns a promise
+    // Sends a single message to the channels and returns a promise
     const self = this;
-    function sendChunk(text) {
-      return self.api('chat.postMessage', 'POST',
+    function sendChunk(content) {
+      return self.api('files.upload', 'POST',
         {
-          text,
-          channel,
+          title: 'changelog v1',
+          content,
+          filename: 'test',
+          filetype: 'post',
+          channels,
+          as_user: true,
           parse: 'full',
+          pretty: 1,
           username: self.config.slack.username,
           icon_emoji: self.config.slack.icon_emoji,
           icon_url: self.config.slack.icon_url
