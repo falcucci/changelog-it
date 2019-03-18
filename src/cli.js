@@ -5,18 +5,19 @@
  */
 
 import "@babel/polyfill";
-import 'source-map-support/register';
-import program from 'commander';
-import _ from 'lodash';
-import ejs from 'ejs'
-import path from 'path';
-import Slack from './Slack';
-import Utils from './Utils';
-import Entities from 'html-entities';
+import "source-map-support/register";
+import program from "commander";
+import _ from "lodash";
+import ejs from "ejs";
+import path from "path";
+import Slack from "./Slack";
+import Utils from "./Utils";
+import Entities from "html-entities";
 
-import {readConfigFile, CONF_FILENAME} from './Config';
-import SourceControl from './SourceControl';
-import Jira from './Jira';
+import { readConfigFile, CONF_FILENAME } from "./Config";
+import SourceControl from "./SourceControl";
+import Jira from "./Jira";
+import IssueTypes from './IssueTypes';
 
 runProgram();
 
@@ -77,11 +78,20 @@ async function runProgram() {
     const config = readConfigFile(configPath);
     const jira = new Jira(config);
     const source = new SourceControl(config);
+    const isFunction = (
+      typeof config.jira.generateReleaseVersionName === "function"
+    )
 
     // Release flag used, but no name passed
     if (program.release === true) {
-      if (typeof config.jira.generateReleaseVersionName !== 'function') {
-        console.log("You need to define the jira.generateReleaseVersionName function in your config, if you're not going to pass the release version name in the command.")
+      /* treatment to let the script working without a release
+       * version */
+      if (!isFunction) {
+        console.log(
+          `You need to define the jira.generateReleaseVersionName
+          function in your config, if you're not going to pass the
+          release version name in the command.`
+        );
         return;
       }
       program.release = await config.jira.generateReleaseVersionName();
@@ -127,17 +137,41 @@ async function runProgram() {
         /**
          * assign the new names here
          */
-        data.tickets.all[ticket].fields.issuetype.name = Utils.mapIssueTypes(
-          _.get(data.tickets.all[ticket], 'fields.issuetype.name')
+        data.tickets.all[ticket].fields.issuetype.name = (
+          Utils.mapIssueTypes(
+            _.get(data.tickets.all[ticket], 'fields.issuetype.name')
+          )
         )
       }
     }
+
+    /**
+     * TODO: docstring
+     */
+    const issueValues = Object.values(IssueTypes)
+    data.sessions = {}
+    for (const value of issueValues) {
+      data.sessions[value] = Utils.mapSessions(
+        data.tickets.all,
+        { 'fields': { 'issuetype': { 'name': value } } }
+      )
+    }
+    console.log('data.sessions: ', data.sessions);
+
+    data.sessionTypes = issueValues
+
     const changelogMessage = ejs.render(config.template, data);
     console.log(entitles.decode(changelogMessage));
 
     // Post to slack
     if (program.slack) {
-      postToSlack(config, data, changelogMessage, program.release, projectName);
+      postToSlack(
+        config,
+        data,
+        changelogMessage,
+        program.release,
+        projectName
+      );
     }
   } catch(e) {
     console.error('Error: ', e.stack);

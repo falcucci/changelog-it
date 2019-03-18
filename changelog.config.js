@@ -7,14 +7,14 @@ module.exports = {
 
     // API
     api: {
-      host: "magazineluiza.atlassian.net",
+      host: "",
       username: "",
       password: ""
     },
 
     // Jira base web URL
     // Set to the base URL for your Jira account
-    baseUrl: 'https://magazineluiza.atlassian.net',
+    baseUrl: '',
 
     // Regex used to match the issue ticket key
     // Use capture group one to isolate the key text within surrounding characters (if needed).
@@ -99,7 +99,8 @@ module.exports = {
 <% jira.releaseVersions.forEach((release) => { %>
   [jira](<%= jira.baseUrl + '/projects/' + release.projectKey + '/versions/' + release.id -%>) /
 <% }); -%>
-<% } %> [gitlab](https://gitlab.luizalabs.com/luizalabs/mobile-vendas-api/tags/<%= jira.releaseVersions[0].name -%>)
+ [gitlab](https://gitlab.luizalabs.com/luizalabs/mobile-vendas-api/tags/<%= jira.releaseVersions[0].name -%>)
+<% } %>
 
 Itaque his sapiens semper vacabit. Quis Aristidem non mortuum diligit? An tu me de L. Cur deinde Metrodori liberos commendas? Negat enim summo bono afferre incrementum diem. Summus dolor plures dies manere non potest?
 
@@ -109,18 +110,24 @@ Itaque his sapiens semper vacabit. Quis Aristidem non mortuum diligit? An tu me 
 
 # Changelog
 ---------------------
-
-<% tickets.all.forEach((ticket) => { %>
-  #### <%= ticket.fields.issuetype.name %>
-  * [<%= ticket.key %>](<%= jira.baseUrl + '/browse/' + ticket.key %>) - <%- ticket.fields.summary %>
+<% sessionTypes.forEach((type) => { %>
+<% if (sessions[type].length) {%>
+#### <%= type %>
+  <% sessions[type].forEach((ticket) => { %>
+* [<%= ticket.key %>](<%= jira.baseUrl + '/browse/' + ticket.key %>) - <%- ticket.fields.summary %>
+  <% }); -%>
+<% } %>
 <% }); -%>
 <% if (!tickets.all.length) {%> ~ None ~ <% } %>
 
 ----------
 
-  #### Merged Requests
+#### Merged Requests
 
-  * [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
+* [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
+* [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
+* [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
+* [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
 
 ----------
 
@@ -128,10 +135,11 @@ Itaque his sapiens semper vacabit. Quis Aristidem non mortuum diligit? An tu me 
 <% if (committers.length) {%>
   #### Committers: <%= committers.length -%>
 
-  <% committers.forEach((committer) => { %>
-    * <%= committer.name %> (<%= '@'+committer.username %>)
-  <% }); -%>
+<% committers.forEach((committer) => { %>
+* <%= committer.name %> (<%= '@'+committer.username %>)
+<% }); -%>
 
 <% } %>
+
 `
 };
