@@ -156,10 +156,8 @@ async function runProgram() {
         { 'fields': { 'issuetype': { 'name': value } } }
       )
     }
-    console.log('data.sessions: ', data.sessions);
 
     data.sessionTypes = issueValues
-
     const changelogMessage = ejs.render(config.template, data);
     console.log(entitles.decode(changelogMessage));
 
