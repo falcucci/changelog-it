@@ -18,7 +18,7 @@ export default class Gitlab {
   }
 
   /**
-   * Is the slack integration enabled
+   * Is the gitlab integration enabled
    */
   isEnabled() {
     return (
