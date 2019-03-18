@@ -14,10 +14,11 @@ import Slack from "./Slack";
 import Utils from "./Utils";
 import Entities from "html-entities";
 
-import { readConfigFile, CONF_FILENAME } from "./Config";
-import SourceControl from "./SourceControl";
 import Jira from "./Jira";
+import Gitlab from './Gitlab';
 import IssueTypes from './IssueTypes';
+import SourceControl from "./SourceControl";
+import { readConfigFile, CONF_FILENAME } from "./Config";
 
 runProgram();
 
@@ -43,8 +44,17 @@ function commandLineArgs() {
       parseRange
     )
     .option(
+      '-d, --date <date>[...date]',
+      'Only include commits after this date',
+      parseRange
+    )
+    .option(
       '-s, --slack',
       'Automatically post changelog to slack (if configured)'
+    )
+    .option(
+      '-gl, --gitlab',
+      'Automatically generate a release (if configured)'
     )
     .option(
       '--release [release]',
@@ -77,6 +87,7 @@ async function runProgram() {
 
     const config = readConfigFile(configPath);
     const jira = new Jira(config);
+    const gitlab = new Gitlab(config);
     const source = new SourceControl(config);
     const isFunction = (
       typeof config.jira.generateReleaseVersionName === "function"
@@ -101,8 +112,9 @@ async function runProgram() {
     const range = getRangeObject(config);
     const commitLogs = await source.getCommitLogs(gitPath, range);
     const changelog = await jira.generate(commitLogs, program.release);
-    const remoteUrl = await source.getRemoteUrl()
     const projectName = await source.getProjectName()
+    const mergeRequests = await gitlab.getMergeRequests(projectName);
+    const remoteUrl = await source.getRemoteUrl()
 
     // Template data template
     let data = await transformCommitLogs(config, changelog);
@@ -113,6 +125,8 @@ async function runProgram() {
       baseUrl: config.jira.baseUrl,
       releaseVersions: jira.releaseVersions,
     };
+
+    data.mergedRequests = mergeRequests
 
     data.committers = []
     commitLogs.forEach(commit => {
@@ -127,8 +141,6 @@ async function runProgram() {
     })
     data.committers = _.uniqBy(data.committers, 'username')
 
-    // Render and output template
-    const entitles = new Entities.AllHtmlEntities();
     /**
      * map all the Jira issue types
      */
@@ -158,6 +170,9 @@ async function runProgram() {
     }
 
     data.sessionTypes = issueValues
+
+    // Render and output template
+    const entitles = new Entities.AllHtmlEntities();
     const changelogMessage = ejs.render(config.template, data);
     console.log(entitles.decode(changelogMessage));
 

@@ -44,6 +44,15 @@ module.exports = {
     }
   },
 
+  // Gitlab API integration
+  gitlab: {
+    api: {
+      user: '', // can be the organization/username as well
+      host: '',
+      apiKey: ''
+    }
+  },
+
   // Slack API integration
   slack: {
 
@@ -124,22 +133,20 @@ Itaque his sapiens semper vacabit. Quis Aristidem non mortuum diligit? An tu me 
 
 #### Merged Requests
 
-* [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
-* [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
-* [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
-* [#125](https://github.com/lerna/lerna-changelog/pull/125) Fix nextVersion config handling ([@Turbo87](https://github.com/Turbo87))
+<% mergedRequests.forEach((mr) => { %>
+* [<%= '#'+mr.iid %>](<%= mr.web_url %>) - <%= mr.title %>
+<% }); -%>
 
 ----------
 
 <% if (!tickets.pendingByOwner.length) {%> ~ None. Yay! ~ <% } %>
 <% if (committers.length) {%>
-  #### Committers: <%= committers.length -%>
+#### Committers: <%= committers.length -%>
 
 <% committers.forEach((committer) => { %>
 * <%= committer.name %> (<%= '@'+committer.username %>)
 <% }); -%>
 
 <% } %>
-
 `
 };

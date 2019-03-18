@@ -25,7 +25,6 @@ const mapIssueTypes = type => {
  *
  */
 const mapSessions = (objects, prop) => {
-  console.log('prop: ', prop);
   return _.filter(objects, prop)
 }
 
