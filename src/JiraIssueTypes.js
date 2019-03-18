@@ -8,6 +8,7 @@ const JiraIssueTypes = {
   BREAKING_CHANGE: 'Breaking Change',
   BUG: 'Bug',
   FEATURE: 'História',
+  SUBTASK: 'Subtarefa',
   ENHANCEMENT: 'Tarefa'
 }
 

@@ -57,6 +57,37 @@ export default class SourceControl {
     })
   }
 
+  getTagTimestamp() {
+    return this.getLastestTag()
+      .then(tag => {
+        return new Promise((resolve, reject) => {
+          git().log({
+            format: { date: '%cI'}
+          }, (err, result) => {
+            if (err) {
+              return reject(err)
+            }
+            return resolve(result.latest.date)
+          });
+        })
+      })
+  }
+
+  /**
+   * TODO: docstring
+   *
+   */
+  getLastestTag() {
+    return new Promise((resolve, reject) => {
+      git().tags((err, tags) => {
+        if (err) {
+          return reject(err)
+        }
+        return resolve(tags.latest)
+      });
+    })
+  }
+
   /**
    * Return commit logs for a range.
    *

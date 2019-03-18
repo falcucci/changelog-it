@@ -3,12 +3,12 @@
  */
 
 const IssueTypes = {
-  INTERNAL: ':house: Internal',
-  DOCUMENTATION: ':memo: Documentation',
   BREAKING_CHANGE: ':boom: Breaking Change',
-  BUG: ':bug: Bug Fixes',
   FEATURE: ':tada: Feature',
-  ENHANCEMENT: ':rocket: Enhancement'
+  ENHANCEMENT: ':rocket: Enhancement',
+  BUG: ':bug: Bug Fixes',
+  INTERNAL: ':house: Internal',
+  DOCUMENTATION: ':memo: Documentation'
 }
 
 export default IssueTypes

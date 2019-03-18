@@ -113,7 +113,11 @@ async function runProgram() {
     const commitLogs = await source.getCommitLogs(gitPath, range);
     const changelog = await jira.generate(commitLogs, program.release);
     const projectName = await source.getProjectName()
-    const mergeRequests = await gitlab.getMergeRequests(projectName);
+    const tagTimestamp = await source.getTagTimestamp()
+    const mergeRequests = await gitlab.getMergeRequests(
+      projectName,
+      tagTimestamp
+    );
     const remoteUrl = await source.getRemoteUrl()
 
     // Template data template

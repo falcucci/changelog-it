@@ -80,7 +80,7 @@ export default class Gitlab {
   }
 
 
-  getMergeRequests(projectId) {
+  getMergeRequests(projectId, timestamp) {
     // No gitlab integration
     if (!this.isEnabled()) {
       return Promise.resolve([]);
@@ -101,7 +101,15 @@ export default class Gitlab {
     )
 
     projectId = encodeURIComponent(`${user}${projectId}`)
-    const url = `projects/${projectId}/merge_requests?state=merged`
+
+    /**
+     * TODO: add target_branch query string
+     *
+     */
+    const url = (
+      `projects/${projectId}/merge_requests` +
+      `?state=merged&created_before=${timestamp}`
+    )
     // Get merge requests
     return this.api(url)
     .then((response) => {
@@ -113,19 +121,9 @@ export default class Gitlab {
         return Promise.reject(err);
       }
 
-      console.log('response: ', response);
       this.mergeRequests = response;
       return this.mergeRequests;
     });
-
-
-
-
   }
-
-
-
-
-
 
 }

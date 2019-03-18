@@ -29,7 +29,6 @@ module.exports = {
 
     // Tickets to exclude from the changelog, by type name
     excludeIssueTypes: [
-      'Sub-task'
     ],
 
     // Tickets to include in changelog, by type name.
