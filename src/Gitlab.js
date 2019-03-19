@@ -46,7 +46,7 @@ export default class Gitlab {
     };
 
     const cachable = (method.toUpperCase() === 'GET');
-    const url = `${this.config.gitlab.api.host}/${endpoint}`;
+    const url = `${this.config.gitlab.api.host}/api/v4/${endpoint}`;
 
     if (!this.isEnabled()) {
       return Promise.reject('The gitlab API is not configured.');

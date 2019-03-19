@@ -179,6 +179,7 @@ async function runProgram() {
     data.projectName = projectName
     data.previousTag = previousTag
     data.latestTag = latestTag
+    data.gitlabHost = _.get(config, 'gitlab.api.host')
 
     // Render and output template
     const entitles = new Entities.AllHtmlEntities();

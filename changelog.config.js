@@ -71,7 +71,46 @@ module.exports = {
 
     // URL to an image to use as the icon for the bot.
     // Cannot be used at the same time as `icon_emoji`
-    icon_url: undefined
+    icon_url: undefined,
+
+    // notify your gmud channel
+    gmud: {
+
+      // This can be a channel string ('#mychannel`) or a channel ID.
+      channel: '',
+
+      template:
+      `
+DATA E HORA: Após aprovação da GMUD
+APLICACAÇÃO: <%= projectName %>
+TIPO: Melhorias
+RISCO: Baixo
+INDISPONIBILIDADE: Não
+
+CHANGELOG:
+<% sessionTypes.forEach((type) => { %><% if (sessions[type].length) {%>
+<%= type %>
+<% sessions[type].forEach((ticket) => { %>* <%- ticket.fields.summary %>
+<% }); -%><% } %><% }); -%>
+
+MR's:
+<% mergedRequests.forEach((mr) => { %>- <%= mr.web_url %>
+<% }); -%>
+
+RELEASE:
+- <%= gitlabHost %>/<%= projectName %>/tags/<%= latestTag %>
+
+COMPARE:
+- <%= gitlabHost %>/<%= projectName %>/compare/<%= previousTag %>...<%= latestTag %>
+
+ROLLBACK:
+- <%= gitlabHost %>/<%= projectName %>/tags/<%= previousTag %>
+
+COMMITTERS:
+<% committers.forEach((committer) => { %>- <%= committer.name %> (<%= '@'+committer.username %>)
+<% }); -%>
+`
+    }
   },
 
   // Github settings
@@ -107,14 +146,14 @@ module.exports = {
 <% jira.releaseVersions.forEach((release) => { %>
   [jira](<%= jira.baseUrl + '/projects/' + release.projectKey + '/versions/' + release.id -%>) /
 <% }); -%>
- [gitlab](https://gitlab.luizalabs.com/luizalabs/mobile-vendas-api/tags/<%= jira.releaseVersions[0].name -%>)
+ [gitlab](<%= gitlabHost %>/<%= projectName %>/tags/<%= jira.releaseVersions[0].name -%>)
 <% } %>
 
 Itaque his sapiens semper vacabit. Quis Aristidem non mortuum diligit? An tu me de L. Cur deinde Metrodori liberos commendas? Negat enim summo bono afferre incrementum diem. Summus dolor plures dies manere non potest?
 
 ----------
 
-[Full Changelog](https://gitlab.luizalabs.com/luizalabs/mobile-vendas-api/compare/v5.8.22...v5.8.23)
+[Full Changelog](<%= gitlabHost %>/<%= projectName %>/compare/v5.8.22...v5.8.23)
 
 # Changelog
 ---------------------
