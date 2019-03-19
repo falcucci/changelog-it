@@ -114,6 +114,8 @@ async function runProgram() {
     const changelog = await jira.generate(commitLogs, program.release);
     const projectName = await source.getProjectName()
     const tagTimestamp = await source.getTagTimestamp()
+    const latestTag = await source.getLastestTag()
+    const previousTag = await source.getPreviousTag()
     const mergeRequests = await gitlab.getMergeRequests(
       projectName,
       tagTimestamp
@@ -174,6 +176,9 @@ async function runProgram() {
     }
 
     data.sessionTypes = issueValues
+    data.projectName = projectName
+    data.previousTag = previousTag
+    data.latestTag = latestTag
 
     // Render and output template
     const entitles = new Entities.AllHtmlEntities();
@@ -189,10 +194,85 @@ async function runProgram() {
         program.release,
         projectName
       );
+      if (_.get(config, 'slack.gmud')) {
+        const changelogGmudMessage = ejs.render(
+          _.get(config, "slack.gmud.template"),
+          data
+        );
+        console.log(entitles.decode(changelogGmudMessage));
+        requestGmudApproval(
+          config,
+          data,
+          changelogGmudMessage,
+          program.release,
+          projectName
+        )
+      }
+
     }
   } catch(e) {
     console.error('Error: ', e.stack);
     console.log(e.message);
+  }
+}
+
+/**
+ * Post the changelog to slack
+ *
+ * @param {Object} config - The configuration object
+ * @param {Object} data - The changelog data object.
+ * @param {String} changelogMessage - The changelog message
+ * @param {String} releaseVersion - The name of the release version to create.
+ * @param {String} projectName - The name of the current project
+ */
+async function requestGmudApproval(
+  config,
+  data,
+  changelogMessage,
+  releaseVersion,
+  projectName
+) {
+  const slack = new Slack(config);
+
+  if (!slack.isEnabled() || !config.slack.gmud.channel) {
+    console.error('Error: Gmud is not configured.');
+    return;
+  }
+
+  console.log(`\nPosting changelog message to slack channel: ${config.slack.channel}...`);
+  try {
+
+    // Transform for slack
+    if (typeof config.transformForSlack === 'function') {
+      changelogMessage = await Promise.resolve(
+        config.transformForSlack(changelogMessage, data)
+      );
+    }
+    console.log('changelogMessage: ', changelogMessage);
+    changelogMessage = '```' + changelogMessage + '```'
+    const opts = {
+      text: changelogMessage,
+      channel: config.slack.gmud.channel,
+      as_user: true,
+      parse: 'full',
+      pretty: 1,
+      username: config.slack.username,
+      icon_emoji: config.slack.icon_emoji,
+      icon_url: config.slack.icon_url
+    }
+
+    // Post to slack
+    await slack.postMessage(
+      opts,
+      'chat.postMessage',
+      changelogMessage,
+      releaseVersion,
+      projectName
+    );
+    console.log('Done');
+
+  } catch(e) {
+    console.log('Error: ', e.stack);
   }
 }
 
@@ -229,10 +309,25 @@ async function postToSlack(
       );
     }
 
+    const opts = {
+      title: `${projectName}-${releaseVersion}`,
+      content: changelogMessage,
+      filename: `${projectName}-${releaseVersion}`,
+      filetype: 'post',
+      channels: config.slack.channel,
+      as_user: true,
+      parse: 'full',
+      pretty: 1,
+      username: config.slack.username,
+      icon_emoji: config.slack.icon_emoji,
+      icon_url: config.slack.icon_url
+    }
+
     // Post to slack
     await slack.postMessage(
+      opts,
+      'files.upload',
       changelogMessage,
-      config.slack.channel,
       releaseVersion,
       projectName
     );

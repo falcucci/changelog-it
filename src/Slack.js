@@ -139,14 +139,21 @@ export default class Slack {
    * Post a message to a slack channel.
    * If the message is longer than slack's limit, it will be cut into multiple messages.
    *
-   * @param {String} text - The message to send to slack
+   * @param {String} url - The url slack api method
+   * @param {String} content - The message to send to slack
    * @param {String} channel - The slack channel ID to send the message to.
    * (i.e. `#engineering`)
    * @param {String} releaseVersion - The name of the release version to create.
    * @param {String} projectName - The name of the project.
    * @return {Promise} Resolves when message has sent
    */
-  postMessage(content, channels, releaseVersion, projectName) {
+  postMessage(
+    opts,
+    url,
+    content,
+    releaseVersion,
+    projectName
+  ) {
     // No message
     if (!content || !content.length) {
       return Promise.reject('No content to send to slack.');
@@ -167,20 +174,7 @@ export default class Slack {
     // Sends a single message to the channels and returns a promise
     const self = this;
     function sendChunk(content) {
-      return self.api('files.upload', 'POST',
-        {
-          title: `${projectName}-${releaseVersion}`,
-          content,
-          filename: `${projectName}-${releaseVersion}`,
-          filetype: 'post',
-          channels,
-          as_user: true,
-          parse: 'full',
-          pretty: 1,
-          username: self.config.slack.username,
-          icon_emoji: self.config.slack.icon_emoji,
-          icon_url: self.config.slack.icon_url
-        }).then((response) => {
+      return self.api(url, 'POST', opts).then((response) => {
           if (response && !response.ok) {
             throw response.error;
           }
