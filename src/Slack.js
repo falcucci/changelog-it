@@ -3,6 +3,7 @@ import urlencoded from 'form-urlencoded';
 
 const API_ROOT = 'https://slack.com/api/';
 const MSG_SIZE_LIMIT = 4000;
+const POST_MESSAGE = 'chat.postMessage'
 
 // Cache of GET requests
 const cache = {};
@@ -164,26 +165,34 @@ export default class Slack {
       return Promise.resolve({});
     }
 
-    const chunks = this.splitUpMessage(content);
+    if (url === POST_MESSAGE) {
+      const chunks = this.splitUpMessage(content);
 
-    // Send all message chunks
-    const sendPromise = chunks.reduce((promise, content) => {
-      return promise.then(() => sendChunk(content));
-    }, Promise.resolve());
+      // Send all message chunks
+      const sendPromise = chunks.reduce((promise, content) => {
+        return promise.then(() => sendChunk(content));
+      }, Promise.resolve());
 
-    // Sends a single message to the channels and returns a promise
-    const self = this;
-    function sendChunk(content) {
-      return self.api(url, 'POST', opts).then((response) => {
+      // Sends a single message to the channels and returns a promise
+      const self = this
+      function sendChunk(content) {
+        return self.api(url, 'POST', opts).then((response) => {
           if (response && !response.ok) {
             throw response.error;
           }
           return response;
         }
-      );
+        );
+      }
+      return sendPromise;
     }
 
-    return sendPromise;
+    return this.api(url, 'POST', opts).then((response) => {
+      if (response && !response.ok) {
+        throw response.error;
+      }
+      return response;
+    });
   }
 
   /**

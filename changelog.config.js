@@ -87,7 +87,7 @@ TIPO: Melhorias
 RISCO: Baixo
 INDISPONIBILIDADE: Não
 
-CHANGELOG:
+CHANGELOG
 <% sessionTypes.forEach((type) => { %><% if (sessions[type].length) {%>
 <%= type %>
 <% sessions[type].forEach((ticket) => { %>* <%- ticket.fields.summary %>

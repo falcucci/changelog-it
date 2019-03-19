@@ -188,7 +188,7 @@ async function runProgram() {
 
     // Post to slack
     if (program.slack) {
-      postToSlack(
+      await postToSlack(
         config,
         data,
         changelogMessage,
@@ -201,7 +201,7 @@ async function runProgram() {
           data
         );
         console.log(entitles.decode(changelogGmudMessage));
-        requestGmudApproval(
+        await requestGmudApproval(
           config,
           data,
           changelogGmudMessage,
@@ -249,7 +249,6 @@ async function requestGmudApproval(
         config.transformForSlack(changelogMessage, data)
       );
     }
-    console.log('changelogMessage: ', changelogMessage);
     changelogMessage = '```' + changelogMessage + '```'
     const opts = {
       text: changelogMessage,
@@ -304,7 +303,7 @@ async function postToSlack(
   try {
 
     // Transform for slack
-    if (typeof config.transformForSlack == 'function') {
+    if (typeof config.transformForSlack === 'function') {
       changelogMessage = await Promise.resolve(
         config.transformForSlack(changelogMessage, data)
       );
