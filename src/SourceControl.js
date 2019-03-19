@@ -1,5 +1,6 @@
 import Slack from './Slack';
 import git from 'simple-git';
+import exec from 'child_process';
 
 /**
  * Connect to the source control system and return commit logs for a range.
@@ -39,6 +40,90 @@ export default class SourceControl {
 
   constructor(config) {
     this.slack = new Slack(config);
+  }
+
+  async getProjectName() {
+    const baseDirSplited = git()._baseDir.split('/')
+    return baseDirSplited[baseDirSplited.length-1]
+  }
+
+  getRemoteUrl() {
+    return new Promise((resolve, reject) => {
+      git().listRemote(['--get-url'], (err, response) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(response)
+      })
+    })
+  }
+
+  getTagTimestamp() {
+    return this.getLastestTag()
+      .then(tag => {
+        return new Promise((resolve, reject) => {
+          git().log({
+            format: { date: '%cI'}
+          }, (err, result) => {
+            if (err) {
+              return reject(err)
+            }
+            return resolve(result.latest.date)
+          });
+        })
+      })
+  }
+
+  /**
+   * TODO: docstring
+   *
+   */
+  getLastestTag() {
+    return new Promise((resolve, reject) => {
+      git().tags((err, tags) => {
+        if (err) {
+          return reject(err)
+        }
+        return resolve(tags.latest)
+      });
+    })
+  }
+
+  getRev() {
+    return new Promise((resolve, reject) => {
+      git().raw(
+        [
+          'rev-list',
+          '--tags',
+          '--skip=1',
+          '--max-count=1'
+        ], (err, result) => {
+          if (err) {
+            return reject(err)
+          }
+          return resolve(result)
+        });
+    })
+  }
+
+  /**
+   * TODO: docstring
+   *
+   */
+  getPreviousTag() {
+    return this.getRev().then(rev => {
+      return new Promise((resolve, reject) => {
+        var yourscript = exec.exec(
+          'git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1`',
+          (error, stdout, stderr) => {
+            if (error !== null) {
+              console.log(`exec error: ${error}`);
+              return reject(err)
+            }
+            return resolve(stdout.trim())
+          });
+      })
+    })
   }
 
   /**

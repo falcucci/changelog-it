@@ -7,24 +7,29 @@ module.exports = {
 
     // API
     api: {
-      host: undefined,
-      username: undefined,
-      password: undefined,
+      host: "",
+      username: "",
+      password: ""
     },
 
     // Jira base web URL
     // Set to the base URL for your Jira account
-    baseUrl: 'https://atlassian.net',
+    baseUrl: '',
 
     // Regex used to match the issue ticket key
     // Use capture group one to isolate the key text within surrounding characters (if needed).
-    ticketIDPattern: /\[([A-Z]+\-[0-9]+)\]/i,
+    ticketIDPattern: /((?!([A-Z0-9a-z]{1,10})-?$)[A-Z]{1}[A-Z0-9]+-\d+)/i,
 
     // Status names that mean the ticket is approved.
-    approvalStatus: ['Done', 'Closed', 'Accepted'],
+    approvalStatus: [
+      'Done',
+      'Closed',
+      'Accepted'
+    ],
 
     // Tickets to exclude from the changelog, by type name
-    excludeIssueTypes: ['Sub-task'],
+    excludeIssueTypes: [
+    ],
 
     // Tickets to include in changelog, by type name.
     // If this is defined, `excludeIssueTypes` is ignored.
@@ -38,15 +43,24 @@ module.exports = {
     }
   },
 
+  // Gitlab API integration
+  gitlab: {
+    api: {
+      user: '', // can be the organization/username as well
+      host: '',
+      apiKey: ''
+    }
+  },
+
   // Slack API integration
   slack: {
 
     // API key string
-    apiKey: undefined,
+    apiKey: '',
 
     // The channel that the changelog will be posted in, when you use the `--slack` flag.
     // This can be a channel string ('#mychannel`) or a channel ID.
-    channel: undefined,
+    channel: '',
 
     // The name to give the slack bot user, when posting the changelog
     username: "Changelog Bot",
@@ -57,7 +71,46 @@ module.exports = {
 
     // URL to an image to use as the icon for the bot.
     // Cannot be used at the same time as `icon_emoji`
-    icon_url: undefined
+    icon_url: undefined,
+
+    // notify your gmud channel
+    gmud: {
+
+      // This can be a channel string ('#mychannel`) or a channel ID.
+      channel: '',
+
+      template:
+      `
+DATA E HORA: Após aprovação da GMUD
+APLICACAÇÃO: <%= projectName %>
+TIPO: Melhorias
+RISCO: Baixo
+INDISPONIBILIDADE: Não
+
+CHANGELOG:
+<% sessionTypes.forEach((type) => { %><% if (sessions[type].length) {%>
+<%= type %>
+<% sessions[type].forEach((ticket) => { %>* <%- ticket.fields.summary %>
+<% }); -%><% } %><% }); -%>
+
+MR's:
+<% mergedRequests.forEach((mr) => { %>- <%= mr.web_url %>
+<% }); -%>
+
+RELEASE:
+- <%= gitlabHost %>/<%= projectName %>/tags/<%= latestTag %>
+
+COMPARE:
+- <%= gitlabHost %>/<%= projectName %>/compare/<%= previousTag %>...<%= latestTag %>
+
+ROLLBACK:
+- <%= gitlabHost %>/<%= projectName %>/tags/<%= previousTag %>
+
+COMMITTERS:
+<% committers.forEach((committer) => { %>- <%= committer.name %> (<%= '@'+committer.username %>)
+<% }); -%>
+`
+    }
   },
 
   // Github settings
@@ -89,35 +142,49 @@ module.exports = {
   // Learn more: http://ejs.co/
   template:
 `<% if (jira.releaseVersions && jira.releaseVersions.length) {  %>
-Release version: <%= jira.releaseVersions[0].name -%>
+#### RELEASES
 <% jira.releaseVersions.forEach((release) => { %>
-  * <%= release.projectKey %>: <%= jira.baseUrl + '/projects/' + release.projectKey + '/versions/' + release.id -%>
+  [jira](<%= jira.baseUrl + '/projects/' + release.projectKey + '/versions/' + release.id -%>) /
 <% }); -%>
+ [gitlab](<%= gitlabHost %>/<%= projectName %>/tags/<%= jira.releaseVersions[0].name -%>)
 <% } %>
 
-Jira Tickets
+Itaque his sapiens semper vacabit. Quis Aristidem non mortuum diligit? An tu me de L. Cur deinde Metrodori liberos commendas? Negat enim summo bono afferre incrementum diem. Summus dolor plures dies manere non potest?
+
+----------
+
+[Full Changelog](<%= gitlabHost %>/<%= projectName %>/compare/v5.8.22...v5.8.23)
+
+# Changelog
 ---------------------
-<% tickets.all.forEach((ticket) => { %>
-  * <<%= ticket.fields.issuetype.name %>> - <%- ticket.fields.summary %>
-    [<%= ticket.key %>] <%= jira.baseUrl + '/browse/' + ticket.key %>
+<% sessionTypes.forEach((type) => { %>
+<% if (sessions[type].length) {%>
+#### <%= type %>
+  <% sessions[type].forEach((ticket) => { %>
+* [<%= ticket.key %>](<%= jira.baseUrl + '/browse/' + ticket.key %>) - <%- ticket.fields.summary %>
+  <% }); -%>
+<% } %>
 <% }); -%>
 <% if (!tickets.all.length) {%> ~ None ~ <% } %>
 
-Other Commits
----------------------
-<% commits.noTickets.forEach((commit) => { %>
-  * <%= commit.slackUser ? '@'+commit.slackUser.name : commit.authorName %> - <<%= commit.revision.substr(0, 7) %>> - <%= commit.summary -%>
-<% }); -%>
-<% if (!commits.noTickets.length) {%> ~ None ~ <% } %>
+----------
 
-Pending Approval
----------------------
-<% tickets.pendingByOwner.forEach((owner) => { %>
-<%= (owner.slackUser) ? '@'+owner.slackUser.name : owner.email %>
-<% owner.tickets.forEach((ticket) => { -%>
-  * <%= jira.baseUrl + '/browse/' + ticket.key %>
+#### Merged Requests
+
+<% mergedRequests.forEach((mr) => { %>
+* [<%= '#'+mr.iid %>](<%= mr.web_url %>) - <%= mr.title %>
 <% }); -%>
-<% }); -%>
+
+----------
+
 <% if (!tickets.pendingByOwner.length) {%> ~ None. Yay! ~ <% } %>
+<% if (committers.length) {%>
+#### Committers: <%= committers.length -%>
+
+<% committers.forEach((committer) => { %>
+* <%= committer.name %> (<%= '@'+committer.username %>)
+<% }); -%>
+
+<% } %>
 `
 };

@@ -5,17 +5,20 @@
  */
 
 import "@babel/polyfill";
-import 'source-map-support/register';
-import program from 'commander';
-import _ from 'lodash';
-import ejs from 'ejs'
-import path from 'path';
-import Slack from './Slack';
-import Entities from 'html-entities';
+import "source-map-support/register";
+import program from "commander";
+import _ from "lodash";
+import ejs from "ejs";
+import path from "path";
+import Slack from "./Slack";
+import Utils from "./Utils";
+import Entities from "html-entities";
 
-import {readConfigFile, CONF_FILENAME} from './Config';
-import SourceControl from './SourceControl';
-import Jira from './Jira';
+import Jira from "./Jira";
+import Gitlab from './Gitlab';
+import IssueTypes from './IssueTypes';
+import SourceControl from "./SourceControl";
+import { readConfigFile, CONF_FILENAME } from "./Config";
 
 runProgram();
 
@@ -41,8 +44,17 @@ function commandLineArgs() {
       parseRange
     )
     .option(
+      '-d, --date <date>[...date]',
+      'Only include commits after this date',
+      parseRange
+    )
+    .option(
       '-s, --slack',
       'Automatically post changelog to slack (if configured)'
+    )
+    .option(
+      '-gl, --gitlab',
+      'Automatically generate a release (if configured)'
     )
     .option(
       '--release [release]',
@@ -75,12 +87,22 @@ async function runProgram() {
 
     const config = readConfigFile(configPath);
     const jira = new Jira(config);
+    const gitlab = new Gitlab(config);
     const source = new SourceControl(config);
+    const isFunction = (
+      typeof config.jira.generateReleaseVersionName === "function"
+    )
 
     // Release flag used, but no name passed
     if (program.release === true) {
-      if (typeof config.jira.generateReleaseVersionName !== 'function') {
-        console.log("You need to define the jira.generateReleaseVersionName function in your config, if you're not going to pass the release version name in the command.")
+      /* treatment to let the script working without a release
+       * version */
+      if (!isFunction) {
+        console.log(
+          `You need to define the jira.generateReleaseVersionName
+          function in your config, if you're not going to pass the
+          release version name in the command.`
+        );
         return;
       }
       program.release = await config.jira.generateReleaseVersionName();
@@ -90,6 +112,15 @@ async function runProgram() {
     const range = getRangeObject(config);
     const commitLogs = await source.getCommitLogs(gitPath, range);
     const changelog = await jira.generate(commitLogs, program.release);
+    const projectName = await source.getProjectName()
+    const tagTimestamp = await source.getTagTimestamp()
+    const latestTag = await source.getLastestTag()
+    const previousTag = await source.getPreviousTag()
+    const mergeRequests = await gitlab.getMergeRequests(
+      projectName,
+      tagTimestamp
+    );
+    const remoteUrl = await source.getRemoteUrl()
 
     // Template data template
     let data = await transformCommitLogs(config, changelog);
@@ -101,6 +132,55 @@ async function runProgram() {
       releaseVersions: jira.releaseVersions,
     };
 
+    data.mergedRequests = mergeRequests
+
+    data.committers = []
+    commitLogs.forEach(commit => {
+      /* get the user from slack or just the full name */
+      let username = (
+        commit.slackUser ?
+        commit.slackUser.profile.display_name :
+        commit.email
+      )
+      let name = commit.authorName
+      data.committers.push({ username, name } )
+    })
+    data.committers = _.uniqBy(data.committers, 'username')
+
+    /**
+     * map all the Jira issue types
+     */
+    for (var ticket in data.tickets.all) {
+      if (_.has(data.tickets.all[ticket], 'fields.issuetype.name')) {
+        /**
+         * assign the new names here
+         */
+        data.tickets.all[ticket].fields.issuetype.name = (
+          Utils.mapIssueTypes(
+            _.get(data.tickets.all[ticket], 'fields.issuetype.name')
+          )
+        )
+      }
+    }
+
+    /**
+     * TODO: docstring
+     */
+    const issueValues = Object.values(IssueTypes)
+    data.sessions = {}
+    for (const value of issueValues) {
+      data.sessions[value] = Utils.mapSessions(
+        data.tickets.all,
+        { 'fields': { 'issuetype': { 'name': value } } }
+      )
+    }
+
+    data.sessionTypes = issueValues
+    data.projectName = projectName
+    data.previousTag = previousTag
+    data.latestTag = latestTag
+    data.gitlabHost = _.get(config, 'gitlab.api.host')
+
     // Render and output template
     const entitles = new Entities.AllHtmlEntities();
     const changelogMessage = ejs.render(config.template, data);
@@ -108,7 +188,28 @@ async function runProgram() {
 
     // Post to slack
     if (program.slack) {
-      postToSlack(config, data, changelogMessage);
+      postToSlack(
+        config,
+        data,
+        changelogMessage,
+        program.release,
+        projectName
+      );
+      if (_.get(config, 'slack.gmud')) {
+        const changelogGmudMessage = ejs.render(
+          _.get(config, "slack.gmud.template"),
+          data
+        );
+        console.log(entitles.decode(changelogGmudMessage));
+        requestGmudApproval(
+          config,
+          data,
+          changelogGmudMessage,
+          program.release,
+          projectName
+        )
+      }
+
     }
   } catch(e) {
     console.error('Error: ', e.stack);
@@ -122,8 +223,76 @@ async function runProgram() {
  * @param {Object} config - The configuration object
  * @param {Object} data - The changelog data object.
  * @param {String} changelogMessage - The changelog message
+ * @param {String} releaseVersion - The name of the release version to create.
+ * @param {String} projectName - The name of the current project
  */
-async function postToSlack(config, data, changelogMessage) {
+async function requestGmudApproval(
+  config,
+  data,
+  changelogMessage,
+  releaseVersion,
+  projectName
+) {
+  const slack = new Slack(config);
+
+  if (!slack.isEnabled() || !config.slack.gmud.channel) {
+    console.error('Error: Gmud is not configured.');
+    return;
+  }
+
+  console.log(`\nPosting changelog message to slack channel: ${config.slack.channel}...`);
+  try {
+
+    // Transform for slack
+    if (typeof config.transformForSlack === 'function') {
+      changelogMessage = await Promise.resolve(
+        config.transformForSlack(changelogMessage, data)
+      );
+    }
+    console.log('changelogMessage: ', changelogMessage);
+    changelogMessage = '```' + changelogMessage + '```'
+    const opts = {
+      text: changelogMessage,
+      channel: config.slack.gmud.channel,
+      as_user: true,
+      parse: 'full',
+      pretty: 1,
+      username: config.slack.username,
+      icon_emoji: config.slack.icon_emoji,
+      icon_url: config.slack.icon_url
+    }
+
+    // Post to slack
+    await slack.postMessage(
+      opts,
+      'chat.postMessage',
+      changelogMessage,
+      releaseVersion,
+      projectName
+    );
+    console.log('Done');
+
+  } catch(e) {
+    console.log('Error: ', e.stack);
+  }
+}
+
+/**
+ * Post the changelog to slack
+ *
+ * @param {Object} config - The configuration object
+ * @param {Object} data - The changelog data object.
+ * @param {String} changelogMessage - The changelog message
+ * @param {String} releaseVersion - The name of the release version to create.
+ * @param {String} projectName - The name of the current project
+ */
+async function postToSlack(
+  config,
+  data,
+  changelogMessage,
+  releaseVersion,
+  projectName
+) {
   const slack = new Slack(config);
 
   if (!slack.isEnabled() || !config.slack.channel) {
@@ -136,11 +305,33 @@ async function postToSlack(config, data, changelogMessage) {
 
     // Transform for slack
     if (typeof config.transformForSlack == 'function') {
-      changelogMessage = await Promise.resolve(config.transformForSlack(changelogMessage, data));
+      changelogMessage = await Promise.resolve(
+        config.transformForSlack(changelogMessage, data)
+      );
+    }
+
+    const opts = {
+      title: `${projectName}-${releaseVersion}`,
+      content: changelogMessage,
+      filename: `${projectName}-${releaseVersion}`,
+      filetype: 'post',
+      channels: config.slack.channel,
+      as_user: true,
+      parse: 'full',
+      pretty: 1,
+      username: config.slack.username,
+      icon_emoji: config.slack.icon_emoji,
+      icon_url: config.slack.icon_url
     }
 
     // Post to slack
-    await slack.postMessage(changelogMessage, config.slack.channel);
+    await slack.postMessage(
+      opts,
+      'files.upload',
+      changelogMessage,
+      releaseVersion,
+      projectName
+    );
     console.log('Done');
 
   } catch(e) {
@@ -197,8 +388,13 @@ function transformCommitLogs(config, logs) {
     });
     return all;
   }, {});
-  let ticektList = _.sortBy(Object.values(ticketHash), ticket => ticket.fields.issuetype.name);
-  let pendingTickets = ticektList.filter(ticket => !approvalStatus.includes(ticket.fields.status.name));
+  let ticketList = _.sortBy(
+    Object.values(ticketHash),
+    ticket => ticket.fields.issuetype.name
+  );
+  let pendingTickets = ticketList.filter(
+    ticket => !approvalStatus.includes(ticket.fields.status.name)
+  );
 
   // Pending ticket owners and their tickets/commits
   const reporters = {};
@@ -217,7 +413,6 @@ function transformCommitLogs(config, logs) {
   });
   const pendingByOwner = _.sortBy(Object.values(reporters), item => item.user);
 
-
   // Output filtered data
   return {
     commits: {
@@ -227,8 +422,8 @@ function transformCommitLogs(config, logs) {
     },
     tickets: {
       pendingByOwner,
-      all: ticektList,
-      approved: ticektList.filter(ticket => approvalStatus.includes(ticket.fields.status.name)),
+      all: ticketList,
+      approved: ticketList.filter(ticket => approvalStatus.includes(ticket.fields.status.name)),
       pending: pendingTickets
     }
   }

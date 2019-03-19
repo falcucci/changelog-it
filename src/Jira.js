@@ -84,12 +84,15 @@ export default class Jira {
    * @return {Promsie} Resolves to an object with a jira array property
    */
   findJiraInCommit(commitLog) {
-    const log = Object.assign({tickets: []}, commitLog);
+    const log = Object.assign({ tickets: [] }, commitLog);
     const promises = [];
     const found = {};
 
     const configPattern = this.config.jira.ticketIDPattern;
-    const ticketPattern = new RegExp(configPattern.source, configPattern.flags.replace('g', ''));
+    const ticketPattern = new RegExp(
+      configPattern.source,
+      configPattern.flags.replace("g", "")
+    );
 
     // Search for jira ticket numbers in the commit text
     const tickets = this.getTickets(log);
