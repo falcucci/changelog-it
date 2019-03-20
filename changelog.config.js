@@ -1,4 +1,4 @@
-var Haikunator = require('haikunator')
+const Source = require('./').SourceControl;
 
 module.exports = {
 
@@ -38,8 +38,7 @@ module.exports = {
     // Get the release version name to use when using `--release` without a value.
     // Returns a Promise
     generateReleaseVersionName: function() {
-      const haikunator = new Haikunator();
-      return Promise.resolve(haikunator.haikunate());
+      return Promise.resolve(Source.getLatestTag());
     }
   },
 

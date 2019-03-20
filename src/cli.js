@@ -72,9 +72,9 @@ async function runProgram() {
 
     // Determine the git workspace path
     let gitPath = process.cwd();
-    if (program.args.length) {
-      gitPath = program.args[0];
-    }
+    // if (program.args.length) {
+    //   gitPath = program.args[0];
+    // }
     gitPath = path.resolve(gitPath);
 
     // Config file path
