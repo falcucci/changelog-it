@@ -6,7 +6,7 @@ Generates a changelog of Jira issues from your git history and, optionally, atta
 For example:
 
 ```bash
-$ changelog-it --range origin/prod...origin/master -s --release
+$ changelog-it --range origin/prod...origin/master --slack --release
 ```
 
 take a look on [this](https://github.com/falcucci/changelog-it/blob/master/changelog.example.md) file to check how it will looks like
@@ -22,7 +22,7 @@ The script looks for Jira issue keys, surrounded by square brackets (i.e. `[DEV-
 ## Installation
 
 ```bash
-npm install -g jira-changelog
+npm install -g -S jira-changelog
 ```
 
 
