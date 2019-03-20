@@ -1,4 +1,4 @@
-Jira Changelog Generator
+Changelog-it Generator
 ------------------------
 
 Generates a changelog of Jira issues from your git history and, optionally, attach all issues to a release.
