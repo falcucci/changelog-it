@@ -104,6 +104,19 @@ Then simply add the `--slack` flag to the command:
 changelog-it --range origin/prod...origin/master --slack
 ```
 
+You can automate it generating semantic version tags using the following script:
+```bash
+curl -LsS https://raw.githubusercontent.com/falcucci/release-me/master/changelog-it.sh | bash -s <semantic-version> <summary>
+```
+or creating an alias:
+```bash
+alias release-me='curl -LsS https://raw.githubusercontent.com/falcucci/release-me/master/changelog-it.sh | bash -s $1 $2'
+```
+and run:
+```bash
+release-me <semantic-version> <summary>
+```
+
 ## API
 The code used to generate the changelogs can also be used as modules in your JavaScript.
 See the module source for documentation.
