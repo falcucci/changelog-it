@@ -80,13 +80,15 @@ export default class Gitlab {
     return pending[url];
   }
 
-
+  /**
+   * TODO
+   *
+   */
   generateRelease(projectId, releaseVersion, description) {
     /** No gitlab integration */
     if (!this.isEnabled()) {
-      return Promise.resolve([]);
+      return Promise.resolve([])
     }
-
     /**
      * format the organization/user id to encode it with the project name
      */
@@ -97,9 +99,7 @@ export default class Gitlab {
     )
 
     projectId = encodeURIComponent(`${user}${projectId}`)
-
     const url = `projects/${projectId}/releases`
-
     const opts = {
       id: projectId,
       name: releaseVersion,
@@ -107,21 +107,22 @@ export default class Gitlab {
       description
     }
 
-    return this.api(url, 'POST', opts)
-    .then((response) => {
+    return this.api(url, "POST", opts).then(response => {
       if (!response || response.error) {
         const err = (
-          (response) ? response.error : 'No response from server'
+          response ? response.error : "No response from server"
         )
-        console.error('Could not create a gitlab merge request:', err);
-        return Promise.reject(err)
+        console.error("Could not create a gitlab merge request:", err);
+        return Promise.reject(err);
       }
-
-      return Promise.resolve(response)
+      return Promise.resolve(response);
     });
   }
 
-
+  /**
+   * TODO
+   *
+   */
   getMergeRequests(projectId, timestamp) {
     // No gitlab integration
     if (!this.isEnabled()) {
@@ -162,10 +163,8 @@ export default class Gitlab {
         console.error('Could not load gitlab merge requests:', err);
         return Promise.reject(err);
       }
-
       this.mergeRequests = response;
       return this.mergeRequests;
     });
   }
-
 }
