@@ -9,6 +9,7 @@ For example:
 $ changelog-it --range origin/prod...origin/master -s --release
 ```
 
+## how it looks like?
 
 #### RELEASES
 
