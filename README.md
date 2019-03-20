@@ -1,4 +1,4 @@
-Jira Changelog Generator
+Changelog-it
 ------------------------
 
 Generates a changelog of Jira issues from your git history and, optionally, attach all issues to a release.
@@ -6,31 +6,10 @@ Generates a changelog of Jira issues from your git history and, optionally, atta
 For example:
 
 ```bash
-$ jira-changelog --range origin/prod...origin/master
+$ changelog-it --range origin/prod...origin/master --slack --release
 ```
 
-```
-Jira Tickets
----------------------
-
-  * <Bug> - Unable to access date widget
-    [DEV-1234] https://yoursite.atlassian.net/browse/DEV-1234
-
-  * <Story> - Support left-handed keyboards
-    [DEV-5678] https://yoursite.atlassian.net/browse/DEV-5678
-
-  * <Story> - Search by location
-    [DEV-8901] https://yoursite.atlassian.net/browse/DEV-8901
-
-Other Commits
----------------------
-
-  * <cd6f512> - Fix typo in welcome message
-
-Pending Approval
----------------------
- ~ None. Yay! ~
-```
+take a look on [this](https://github.com/falcucci/changelog-it/blob/master/changelog.example.md) file to check how it will looks like
 
 
 You can also have it automatically post to slack!
@@ -43,7 +22,7 @@ The script looks for Jira issue keys, surrounded by square brackets (i.e. `[DEV-
 ## Installation
 
 ```bash
-npm install -g jira-changelog
+npm install -g -S @falcucci/changelog-it
 ```
 
 
@@ -70,7 +49,7 @@ To see all values suported, look at the `changelog.config.js` file at the root o
 ## Usage
 
 ```bash
-jira-changelog --range origin/prod...origin/master
+changelog-it --range origin/prod...origin/master --slack --release
 ```
 
 Assuming you deploy from the prod branch, this will generate a changelog with all commits after the last production deploy to the current master version.
@@ -78,7 +57,7 @@ Assuming you deploy from the prod branch, this will generate a changelog with al
 If you define `sourceControl.defaultRange` in your config, you can run the command with the `--range` flag:
 
 ```bash
-jira-changelog
+changelog-it
 ```
 
 ## Releases
@@ -86,7 +65,7 @@ jira-changelog
 You can automatically attach Jira issues to a release with the `--release` flag. For example, let's say we want to add all issues in the changelog to the "sprint-12" release:
 
 ```bash
-jira-changelog --range origin/prod...origin/master --release sprint-12
+changelog-it --range origin/prod...origin/master --release sprint-12
 ```
 
 This will set the `fixVersions` of all issues to "sprint-12" in Jira.
@@ -122,7 +101,7 @@ module.exports = {
 Then simply add the `--slack` flag to the command:
 
 ```bash
-jira-changelog --range origin/prod...origin/master --slack
+changelog-it --range origin/prod...origin/master --slack
 ```
 
 ## API
@@ -132,11 +111,11 @@ See the module source for documentation.
 For example:
 
 ```bash
-npm install -S jira-changelog
+npm install -S @falcucci/changelog-it
 ```
 
 ```javascript
-const Config = require('jira-changelog').Config;
+const Config = require('@falcucci/changelog-it').Config;
 const SourceControl = require('jira-changelog').SourceControl;
 const Jira = require('jira-changelog').Jira;
 
