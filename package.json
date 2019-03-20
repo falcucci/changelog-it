@@ -1,11 +1,11 @@
 {
-  "name": "jira-changelog",
+  "name": "@falcucci/changelog-it",
   "version": "1.5.0",
   "description": "Generates a changelog by matching git commits to Jira tickets.",
-  "repository": "https://github.com/jgillick/jira-changelog",
+  "repository": "https://github.com/falucci/jira-changelog",
   "main": "dist/index.js",
   "bin": {
-    "jira-changelog": "dist/cli.js"
+    "changelog-it": "dist/cli.js"
   },
   "files": [
     "dist"
