@@ -108,7 +108,7 @@ You can automate it generating semantic version tags using the following script:
 ```bash
 curl -LsS https://raw.githubusercontent.com/falcucci/release-me/master/changelog-it.sh | bash -s <semantic-version> <summary>
 ```
-or creating an alias:
+or creating an alias in your `.aliases` file:
 ```bash
 alias release-me='curl -LsS https://raw.githubusercontent.com/falcucci/release-me/master/changelog-it.sh | bash -s $1 $2'
 ```
