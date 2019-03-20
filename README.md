@@ -6,7 +6,7 @@ Generates a changelog of Jira issues from your git history and, optionally, atta
 For example:
 
 ```bash
-$ jira-changelog --range origin/prod...origin/master
+$ changelog-it --range origin/prod...origin/master -s --release
 ```
 
 ```
