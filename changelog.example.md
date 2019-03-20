@@ -31,12 +31,12 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sit hoc ultimum bonorum
 
 ##### MR's
 
-- [#518](https:///merge_requests/518) - SQDVENDAS-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- [#518](https:///merge_requests/518) - SQDVENDAS-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- [#518](https:///merge_requests/518) - SQDVENDAS-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- [#518](https:///merge_requests/518) - SQDVENDAS-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- [#518](https:///merge_requests/518) - SQDVENDAS-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-- [#518](https:///merge_requests/518) - SQDVENDAS-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- [#518](https:///merge_requests/518) - JIRA-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- [#518](https:///merge_requests/518) - JIRA-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- [#518](https:///merge_requests/518) - JIRA-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- [#518](https:///merge_requests/518) - JIRA-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- [#518](https:///merge_requests/518) - JIRA-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- [#518](https:///merge_requests/518) - JIRA-38 - feature: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 ----------
 
