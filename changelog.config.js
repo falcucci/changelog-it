@@ -86,6 +86,9 @@ APLICACAÇÃO: <%= projectName %>
 TIPO: Melhorias
 RISCO: Baixo
 INDISPONIBILIDADE: Não
+<% if (summary) {%>
+MOTIVO: <%= summary %>
+<% } %>
 
 CHANGELOG
 <% sessionTypes.forEach((type) => { %><% if (sessions[type].length) {%>
@@ -98,13 +101,13 @@ MR's:
 <% }); -%>
 
 RELEASE:
-- <%= gitlabHost %>/<%= projectName %>/tags/<%= latestTag %>
+- <%= gitlabHost %>/<%= gitlabUser %>/<%= projectName %>/tags/<%= latestTag %>
 
 COMPARE:
-- <%= gitlabHost %>/<%= projectName %>/compare/<%= previousTag %>...<%= latestTag %>
+- <%= gitlabHost %>/<%= gitlabUser %>/<%= projectName %>/compare/<%= previousTag %>...<%= latestTag %>
 
 ROLLBACK:
-- <%= gitlabHost %>/<%= projectName %>/tags/<%= previousTag %>
+- <%= gitlabHost %>/<%= gitlabUser %>/<%= projectName %>/tags/<%= previousTag %>
 
 COMMITTERS:
 <% committers.forEach((committer) => { %>- <%= committer.name %> (<%= '@'+committer.username %>)
@@ -146,45 +149,40 @@ COMMITTERS:
 <% jira.releaseVersions.forEach((release) => { %>
   [jira](<%= jira.baseUrl + '/projects/' + release.projectKey + '/versions/' + release.id -%>) /
 <% }); -%>
- [gitlab](<%= gitlabHost %>/<%= projectName %>/tags/<%= jira.releaseVersions[0].name -%>)
+ [gitlab](<%= gitlabHost %>/<%= gitlabUser %>/<%= projectName %>/tags/<%= jira.releaseVersions[0].name -%>)
 <% } %>
 
-Itaque his sapiens semper vacabit. Quis Aristidem non mortuum diligit? An tu me de L. Cur deinde Metrodori liberos commendas? Negat enim summo bono afferre incrementum diem. Summus dolor plures dies manere non potest?
+<%= summary %>
 
 ----------
 
-[Full Changelog](<%= gitlabHost %>/<%= projectName %>/compare/v5.8.22...v5.8.23)
+#### [Full Changelog](<%= gitlabHost %>/<%= gitlabUser %>/<%= projectName %>/compare/<%= previousTag %>...<%= latestTag %>)
+----------
 
-# Changelog
----------------------
 <% sessionTypes.forEach((type) => { %>
 <% if (sessions[type].length) {%>
-#### <%= type %>
+<%= type %>
   <% sessions[type].forEach((ticket) => { %>
 * [<%= ticket.key %>](<%= jira.baseUrl + '/browse/' + ticket.key %>) - <%- ticket.fields.summary %>
   <% }); -%>
 <% } %>
 <% }); -%>
 <% if (!tickets.all.length) {%> ~ None ~ <% } %>
-
 ----------
 
-#### Merged Requests
+##### MR's
 
 <% mergedRequests.forEach((mr) => { %>
-* [<%= '#'+mr.iid %>](<%= mr.web_url %>) - <%= mr.title %>
+- [<%= '#'+mr.iid %>](<%= mr.web_url %>) - <%= mr.title %>
 <% }); -%>
-
 ----------
 
 <% if (!tickets.pendingByOwner.length) {%> ~ None. Yay! ~ <% } %>
 <% if (committers.length) {%>
-#### Committers: <%= committers.length -%>
-
+##### Committers: **<%= committers.length -%>**
 <% committers.forEach((committer) => { %>
 * <%= committer.name %> (<%= '@'+committer.username %>)
 <% }); -%>
-
 <% } %>
 `
 };

@@ -53,12 +53,12 @@ function commandLineArgs() {
       'Automatically post changelog to slack (if configured)'
     )
     .option(
-      '-gl, --gitlab',
-      'Automatically generate a release (if configured)'
-    )
-    .option(
       '--release [release]',
       'Assign a release version to these stories'
+    )
+    .option(
+      '--summary [text]',
+      'Summary of your release'
     )
     .parse(process.argv);
 }
@@ -93,6 +93,10 @@ async function runProgram() {
       typeof config.jira.generateReleaseVersionName === "function"
     )
 
+    if (program.summary === true) {
+      program.summary = undefined
+    }
+
     // Release flag used, but no name passed
     if (program.release === true) {
       /* treatment to let the script working without a release
@@ -120,7 +124,6 @@ async function runProgram() {
       projectName,
       tagTimestamp
     );
-    const remoteUrl = await source.getRemoteUrl()
 
     // Template data template
     let data = await transformCommitLogs(config, changelog);
@@ -180,11 +183,23 @@ async function runProgram() {
     data.previousTag = previousTag
     data.latestTag = latestTag
     data.gitlabHost = _.get(config, 'gitlab.api.host')
+    data.gitlabUser = _.get(config, 'gitlab.api.user')
+    data.summary = program.summary
 
     // Render and output template
     const entitles = new Entities.AllHtmlEntities();
     const changelogMessage = ejs.render(config.template, data);
     console.log(entitles.decode(changelogMessage));
+
+    if (program.release) {
+      await generateGilabRelease(
+        config,
+        gitlab,
+        changelogMessage,
+        program.release,
+        projectName
+      );
+    }
 
     // Post to slack
     if (program.slack) {
@@ -214,6 +229,41 @@ async function runProgram() {
   } catch(e) {
     console.error('Error: ', e.stack);
     console.log(e.message);
+  }
+}
+
+/**
+ * Generate a relase with the release name param
+ *
+ * @param {Object} gitlab - The gilab class;
+ * @param {String} changelogMessage - The changelog message
+ * @param {String} releaseVersion - The name of the release
+ * version to create.
+ */
+async function generateGilabRelease(
+  config,
+  gitlab,
+  changelogMessage,
+  releaseVersion,
+  projectName
+) {
+
+  if (!gitlab.isEnabled()) {
+    console.error('Error: Gmud is not configured.');
+    return;
+  }
+  try {
+    // Generate release
+    await gitlab.generateRelease(
+      projectName,
+      releaseVersion,
+      changelogMessage
+    );
+    console.log(
+    `GitLab Release ${releaseVersion} generated`);
+  } catch (e) {
+    /* handle error */
+    console.log('Error: ', e.stack);
   }
 }
 

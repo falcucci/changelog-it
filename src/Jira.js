@@ -44,7 +44,6 @@ export default class Jira {
     const logs = [];
     this.releaseVersions = [];
     try {
-
       const promises = commitLogs.map((commit) => {
         return this.findJiraInCommit(commit, releaseVersion)
           .then((log) => { logs.push(log); });

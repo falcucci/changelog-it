@@ -24,8 +24,9 @@ export default class Gitlab {
     return (
       this.config.gitlab &&
       this.config.gitlab.api &&
-      this.config.gitlab.api.apiKey &&
-      this.config.gitlab.api.host
+      this.config.gitlab.api.user &&
+      this.config.gitlab.api.host &&
+      this.config.gitlab.api.apiKey
     );
   }
 
@@ -77,6 +78,47 @@ export default class Gitlab {
     });
 
     return pending[url];
+  }
+
+
+  generateRelease(projectId, releaseVersion, description) {
+    /** No gitlab integration */
+    if (!this.isEnabled()) {
+      return Promise.resolve([]);
+    }
+
+    /**
+     * format the organization/user id to encode it with the project name
+     */
+    const user = (
+      this.config.gitlab.api.user
+      ? `${this.config.gitlab.api.user}/`
+      : ''
+    )
+
+    projectId = encodeURIComponent(`${user}${projectId}`)
+
+    const url = `projects/${projectId}/releases`
+
+    const opts = {
+      id: projectId,
+      name: releaseVersion,
+      tag_name: releaseVersion,
+      description
+    }
+
+    return this.api(url, 'POST', opts)
+    .then((response) => {
+      if (!response || response.error) {
+        const err = (
+          (response) ? response.error : 'No response from server'
+        )
+        console.error('Could not create a gitlab merge request:', err);
+        return Promise.reject(err)
+      }
+
+      return Promise.resolve(response)
+    });
   }
 
 
