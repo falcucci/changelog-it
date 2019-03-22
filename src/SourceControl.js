@@ -62,14 +62,18 @@ export default class SourceControl {
     return this.getLastestTag()
       .then(tag => {
         return new Promise((resolve, reject) => {
-          git().log({
-            format: { date: '%cI'}
-          }, (err, result) => {
-            if (err) {
-              return reject(err)
-            }
-            return resolve(result.latest.date)
-          });
+          git().raw(
+            [
+              'log',
+              tag,
+              '-1',
+              '--format=%cI'
+            ], (err, result) => {
+              if (err) {
+                return reject(err)
+              }
+              return resolve(result)
+            });
         })
       })
   }

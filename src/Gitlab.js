@@ -151,7 +151,7 @@ export default class Gitlab {
      */
     const url = (
       `projects/${projectId}/merge_requests` +
-      `?state=merged&created_before=${timestamp}`
+      `?state=merged&created_after=${timestamp}`
     )
     // Get merge requests
     return this.api(url)
