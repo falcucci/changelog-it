@@ -14,6 +14,7 @@ const mapIssueTypes = type => {
     [JiraIssueTypes.BREAKING_CHANGE]: IssueTypes.BREAKING_CHANGE,
     [JiraIssueTypes.FEATURE]: IssueTypes.FEATURE,
     [JiraIssueTypes.ENHANCEMENT]: IssueTypes.ENHANCEMENT,
+    [JiraIssueTypes.FUNCTIONAL]: IssueTypes.ENHANCEMENT,
     [JiraIssueTypes.SUBTASK]: IssueTypes.ENHANCEMENT,
     [JiraIssueTypes.BUG]: IssueTypes.BUG,
     [JiraIssueTypes.INTERNAL]: IssueTypes.INTERNAL,

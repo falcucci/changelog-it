@@ -9,7 +9,8 @@ const JiraIssueTypes = {
   BUG: 'Bug',
   FEATURE: 'História',
   SUBTASK: 'Subtarefa',
-  ENHANCEMENT: 'Tarefa'
+  ENHANCEMENT: 'Tarefa',
+  ENHANCEMENT: 'Débito Funcional'
 }
 
 export default JiraIssueTypes
