@@ -58,24 +58,21 @@ export default class SourceControl {
     })
   }
 
-  getTagTimestamp() {
-    return this.getLastestTag()
-      .then(tag => {
-        return new Promise((resolve, reject) => {
-          git().raw(
-            [
-              'log',
-              tag,
-              '-1',
-              '--format=%cI'
-            ], (err, result) => {
-              if (err) {
-                return reject(err)
-              }
-              return resolve(result)
-            });
-        })
-      })
+  getTagTimestamp(tag) {
+    return new Promise((resolve, reject) => {
+      git().raw(
+        [
+          'log',
+          tag,
+          '-1',
+          '--format=%cI'
+        ], (err, result) => {
+          if (err) {
+            return reject(err)
+          }
+          return resolve(result)
+        });
+    })
   }
 
   /**
