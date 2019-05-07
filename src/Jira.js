@@ -1,4 +1,5 @@
 import "@babel/polyfill";
+import _ from 'lodash';
 import JiraApi from 'jira-client';
 import PromiseThrottle from 'promise-throttle';
 import Slack from './Slack';
@@ -33,6 +34,17 @@ export default class Jira {
   }
 
   /**
+   * check if Jira is enabled
+   */
+    isEnabled() {
+      return (
+        _.get(this.config, 'jira.api.host') &&
+        _.get(this.config, 'jira.api.username') &&
+        _.get(this.config, 'jira.api.password')
+      );
+    }
+
+  /**
    * Generate changelog by matching source control commit logs to jira tickets
    * and, optionally, creating the release version.
    *
@@ -41,6 +53,10 @@ export default class Jira {
    * @return {Object}
    */
   async generate(commitLogs, releaseVersion) {
+    /** No Jira integration */
+    if (!this.isEnabled()) {
+      return Promise.resolve([])
+    }
     const logs = [];
     this.releaseVersions = [];
     try {
