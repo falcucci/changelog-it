@@ -113,12 +113,18 @@ async function runProgram() {
     const commitLogs = await source.getCommitLogs(gitPath, range);
     const changelog = await jira.generate(commitLogs, program.release);
     const projectName = await source.getProjectName()
-    const tagTimestamp = await source.getTagTimestamp(range.from)
-    const latestTag = await source.getLastestTag()
-    const previousTag = await source.getPreviousTag()
+    const fromTagTimestamp = await source.getTagTimestamp(
+      range.from
+    );
+    const targetTagTimestamp = await source.getTagTimestamp(
+      range.to
+    );
+    const latestTag = await source.getLastestTag();
+    const previousTag = await source.getPreviousTag();
     const mergeRequests = await gitlab.getMergeRequests(
       projectName,
-      tagTimestamp
+      fromTagTimestamp,
+      targetTagTimestamp
     );
 
     // Template data template

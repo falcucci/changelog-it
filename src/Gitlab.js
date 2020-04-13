@@ -1,4 +1,5 @@
 import "@babel/polyfill";
+import _ from "lodash";
 import fetch from 'node-fetch';
 import urlencoded from 'form-urlencoded';
 import PromiseThrottle from 'promise-throttle';
@@ -123,7 +124,7 @@ export default class Gitlab {
    * TODO
    *
    */
-  getMergeRequests(projectId, timestamp) {
+  getMergeRequests(projectId, timestamp, target) {
     // No gitlab integration
     if (!this.isEnabled()) {
       return Promise.resolve([]);
@@ -133,6 +134,8 @@ export default class Gitlab {
     if (this.mergeRequests) {
       return Promise.resolve(this.mergeRequests);
     }
+
+    const targetDate = new Date(target.replace('T', ' '));
 
     /**
      * format the organization/user id to encode it with the project name
@@ -164,7 +167,9 @@ export default class Gitlab {
         console.error('Could not load gitlab merge requests:', err);
         return Promise.reject(err);
       }
-      this.mergeRequests = response;
+      this.mergeRequests = _.filter(response, mr => {
+        return new Date(mr.merged_at) <= targetDate
+      });
       return this.mergeRequests;
     });
   }
