@@ -47,6 +47,10 @@ function commandLineArgs() {
       '-s, --slack',
       'Automatically post changelog to slack (if configured)'
     )
+   .option(
+      '--gmud',
+      'Automatically generate and post a gmud template'
+    )
     .option(
       '--release [release]',
       'Assign a release version to these stories'
@@ -92,24 +96,14 @@ async function runProgram() {
       program.summary = undefined
     }
 
-    // Release flag used, but no name passed
-    if (program.release === true) {
-      /* treatment to let the script working without a release
-       * version */
-      if (!isFunction) {
-        console.log(
-          `You need to define the jira.generateReleaseVersionName
-          function in your config, if you're not going to pass the
-          release version name in the command.`
-        );
-        return;
-      }
-      program.release = await config.jira.generateReleaseVersionName();
-    }
 
 
     // Get logs
     const range = getRangeObject(config);
+    // Release flag used, but no name passed
+    if (program.release === true) {
+      program.release = range.to;
+    }
     const commitLogs = await source.getCommitLogs(gitPath, range);
     const changelog = await jira.generate(commitLogs, program.release);
     const projectName = await source.getProjectName()
@@ -198,29 +192,30 @@ async function runProgram() {
       );
     }
 
+    if (program.gmud) {
+      const changelogGmudMessage = ejs.render(
+        _.get(config, "slack.gmud.template"),
+        data
+      );
+      console.log(entitles.decode(changelogGmudMessage));
+      await requestGmudApproval(
+        config,
+        data,
+        changelogGmudMessage,
+        program.release,
+        projectName
+      ) 
+    }
+
     // Post to slack
     if (program.slack) {
       await postToSlack(
         config,
         data,
         changelogMessage,
-        program.release,
+        range.to,
         projectName
       );
-      if (_.get(config, 'slack.gmud')) {
-        const changelogGmudMessage = ejs.render(
-          _.get(config, "slack.gmud.template"),
-          data
-        );
-        console.log(entitles.decode(changelogGmudMessage));
-        await requestGmudApproval(
-          config,
-          data,
-          changelogGmudMessage,
-          program.release,
-          projectName
-        )
-      }
 
     }
   } catch(e) {
