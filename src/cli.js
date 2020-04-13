@@ -43,12 +43,7 @@ function commandLineArgs() {
       'Only include commits after this date',
       parseRange
     )
-    .option(
-      '-d, --date <date>[...date]',
-      'Only include commits after this date',
-      parseRange
-    )
-    .option(
+   .option(
       '-s, --slack',
       'Automatically post changelog to slack (if configured)'
     )
@@ -112,6 +107,7 @@ async function runProgram() {
       program.release = await config.jira.generateReleaseVersionName();
     }
 
+
     // Get logs
     const range = getRangeObject(config);
     const commitLogs = await source.getCommitLogs(gitPath, range);
@@ -135,20 +131,15 @@ async function runProgram() {
       releaseVersions: jira.releaseVersions,
     };
 
-    data.mergedRequests = mergeRequests
+    data.range = range;
+    data.mergedRequests = mergeRequests;
 
-    data.committers = []
-    commitLogs.forEach(commit => {
-      /* get the user from slack or just the full name */
-      let username = (
-        commit.slackUser ?
-        commit.slackUser.profile.display_name :
-        commit.email
-      )
-      let name = commit.authorName
-      data.committers.push({ username, name } )
-    })
-    data.committers = _.uniqBy(data.committers, 'username')
+    data.committers = 
+      _.chain(mergeRequests)
+      .map('author.username')
+      .uniq()
+      .orderBy()
+      .value();
 
     /**
      * map all the Jira issue types
