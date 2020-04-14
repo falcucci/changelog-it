@@ -65,7 +65,7 @@ export default class SourceControl {
           'log',
           tag,
           '-1',
-          '--format=%cI'
+          '--format=%ai'
         ], (err, result) => {
           if (err) {
             return reject(err)
