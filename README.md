@@ -136,8 +136,10 @@ Store the following envs in [GitLab CI variable](https://docs.gitlab.com/ee/ci/v
 changelog:
   script:
     - changelog-it v1.0.0...v2.0.0 --release --gmud
-    # Or using aliases above
+    # Or using aliases above if you have it in a package.json
     - npm run changelog
+    # Or using some script
+    - curl -LsS https://raw.githubusercontent.com/falcucci/release-me/master/changelog-it.sh | bash -s
 ```
 
 You can use changelog-it to generate changelogs and gmuds from anywhere with following
