@@ -117,6 +117,30 @@ and run:
 release-me <semantic-version> <summary>
 ```
 
+### GitLab CI
+
+Store the following envs in [GitLab CI variable](https://docs.gitlab.com/ee/ci/variables/#variables).
+
+| name | description |
+| ---- | ----------- |
+| `GITLAB_API_KEY`  | Gitlab api key (e.g. 14) |
+| `SLACK_API_KEY`   | Slack api key |
+| `SLACK_CHANNELS`  | Slack channels ids separeted by comma |
+| `GMUD_CHANNEL`    | Slack gmud channels ids separeted by comma |
+
+#### .gitlab-ci.yml sample
+
+```yaml
+changelog:
+  script:
+    - changelog-it v1.0.0...v2.0.0 --release --gmud
+    # Or using aliases above
+    - npm run changelog
+```
+
+**note: this requires npm**
+
+
 ## API
 The code used to generate the changelogs can also be used as modules in your JavaScript.
 See the module source for documentation.
