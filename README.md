@@ -6,7 +6,7 @@ Generates a changelog of Jira issues from your git history and, optionally, atta
 For example:
 
 ```bash
-$ changelog-it --range origin/prod...origin/master --slack --release
+$ changelog-it --range origin/prod...origin/master --release --gmudd --summary "some sommary..."
 ```
 
 take a look on [this](https://github.com/falcucci/changelog-it/blob/master/changelog.example.md) file to check how it will looks like
