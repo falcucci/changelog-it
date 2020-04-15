@@ -119,6 +119,8 @@ release-me <semantic-version> <summary>
 
 ### GitLab CI
 
+**note: this requires npm to run+**
+
 Store the following envs in [GitLab CI variable](https://docs.gitlab.com/ee/ci/variables/#variables).
 
 | name | description |
@@ -138,8 +140,15 @@ changelog:
     - npm run changelog
 ```
 
-**note: this requires npm**
+You can use changelog-it to generate changelogs and gmuds from anywhere with following
+environment variables.
 
+```shell
+$ export GITLAB_API_KEY=haya14busa
+$ export SLACK_API_KEY=haya14busa
+$ export SLACK_CHANNELS=APOISFDUP
+$ export GMUD_CHANNEL=PAOISUFOPUAS
+```
 
 ## API
 The code used to generate the changelogs can also be used as modules in your JavaScript.
