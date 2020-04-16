@@ -125,7 +125,7 @@ Store the following envs in [GitLab CI variable](https://docs.gitlab.com/ee/ci/v
 
 | name | description |
 | ---- | ----------- |
-| `GITLAB_API_KEY`  | Gitlab api key (e.g. 14) |
+| `GITLAB_API_KEY`  | Gitlab api key |
 | `SLACK_API_KEY`   | Slack api key |
 | `SLACK_CHANNELS`  | Slack channels ids separeted by comma |
 | `GMUD_CHANNEL`    | Slack gmud channels ids separeted by comma |
