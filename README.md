@@ -139,7 +139,7 @@ changelog:
     # Or using aliases above if you have it in a package.json
     - npm run changelog
     # Or using some script
-    - curl -LsS https://raw.githubusercontent.com/falcucci/release-me/master/changelog-it.sh | bash -s
+    - curl -LsS https://raw.githubusercontent.com/falcucci/release-me/master/ci-changelog-it.sh | bash -s
 ```
 
 You can use changelog-it to generate changelogs and gmuds from anywhere with following
