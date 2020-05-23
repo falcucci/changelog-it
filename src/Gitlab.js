@@ -121,6 +121,38 @@ export default class Gitlab {
     });
   }
 
+  createIssue(gmudRepo, projectId, tag, message) {
+    // No gitlab integration
+    if (!this.isEnabled()) {
+      return Promise.resolve([]);
+    }
+
+    const user = (
+      this.config.gitlab.api.user
+      ? `${this.config.gitlab.api.user}/`
+      : ''
+    )
+    const id = encodeURIComponent(`${user}${gmudRepo}`)
+    const url = `projects/${id}/issues`
+    const opts = {
+      id: id,
+      title: `${projectId} - ${tag}`,
+      description: message
+    }
+
+    return this.api(url, "POST", opts).then(response => {
+      if (!response || response.error) {
+        const err = (
+          response ? response.error : "No response from server"
+        )
+        console.error("Could not create a gitlab merge request:", err);
+        return Promise.reject(err);
+      }
+      return Promise.resolve(response);
+    });
+
+  }
+
   /**
    * TODO
    *

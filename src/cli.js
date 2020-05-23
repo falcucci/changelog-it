@@ -5,11 +5,13 @@
  */
 
 import "@babel/polyfill";
+
 import "source-map-support/register";
 import program from "commander";
 import _ from "lodash";
 import ejs from "ejs";
 import path from "path";
+import semver from 'semver';
 import Slack from "./Slack";
 import Utils from "./Utils";
 import Entities from "html-entities";
@@ -114,6 +116,8 @@ async function runProgram() {
     const latestTag = await source.getLastestTag();
     const previousTag = await source.getPreviousTag();
 
+    const releaseType = semver.diff(range.from, range.to)
+
     let mergeRequests = await gitlab.getMergeRequests(
       source,
       projectName,
@@ -124,16 +128,6 @@ async function runProgram() {
     mergeRequests = _.filter(mergeRequests, {
       release_tag: (range.to).replace("v", "")
     })
-
-    // adds the merge request associated tag
-    // await _.map(mergeRequests, async mr => {
-    //   mr.release_tag = await source.getMergeRequestRelease(
-    //     mr.merge_commit_sha
-    //   )
-    //   return mr
-    // })
-    // console.log('mergeRequests: ', mergeRequests);
-
 
     // Template data template
     let data = await transformCommitLogs(config, changelog);
@@ -147,6 +141,7 @@ async function runProgram() {
 
     data.range = range;
     data.mergedRequests = mergeRequests;
+    data.releaseType = releaseType;
 
     data.committers = 
       _.chain(mergeRequests)
@@ -212,7 +207,8 @@ async function runProgram() {
         data
       );
       console.log(entitles.decode(changelogGmudMessage));
-      await requestGmudApproval(
+      const bodyMessage = await requestGmudApproval(
+        gitlab,
         config,
         data,
         changelogGmudMessage,
@@ -283,6 +279,7 @@ async function generateGilabRelease(
  * @param {String} projectName - The name of the current project
  */
 async function requestGmudApproval(
+  gitlab,
   config,
   data,
   changelogMessage,
@@ -305,12 +302,28 @@ async function requestGmudApproval(
         config.transformForSlack(changelogMessage, data)
       );
     }
+
+    const issue = await gitlab.createIssue(
+      _.get(config, "slack.gmud.repo"),
+      projectName,
+      releaseVersion,
+      changelogMessage
+    );
+
+    let phrase = 
+      `hey <!here>, the app ` +
+      '`' + projectName + '`' +
+      ' has a new ' +
+      `<${issue.web_url}|*gmud*> ` +
+      'waiting for review!';
     changelogMessage = '```' + changelogMessage + '```'
+
     const opts = {
-      text: changelogMessage,
+      type: 'mrkdwn',
+      text: phrase,
       channel: config.slack.gmud.channel,
-      as_user: true,
-      parse: 'full',
+      as_user: false,
+      // parse: 'full',
       pretty: 1,
       username: config.slack.username,
       icon_emoji: config.slack.icon_emoji,
@@ -327,8 +340,11 @@ async function requestGmudApproval(
     );
     console.log('Done');
 
+    return changelogMessage;
+
   } catch(e) {
     console.log('Error: ', e.stack);
+    return e;
   }
 }
 
