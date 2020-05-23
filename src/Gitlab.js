@@ -67,6 +67,7 @@ export default class Gitlab {
     else if (method === 'GET' && pending[url]) {
       return pending[url];
     }
+    console.log('url: ', url);
 
     pending[url] = fetch(url, { method, body, headers })
     .then(res => res.json())
@@ -124,7 +125,7 @@ export default class Gitlab {
    * TODO
    *
    */
-  getMergeRequests(projectId, timestamp, target) {
+  getMergeRequests(source, projectId, timestamp, target) {
     // No gitlab integration
     if (!this.isEnabled()) {
       return Promise.resolve([]);
@@ -154,12 +155,12 @@ export default class Gitlab {
      */
     const url = (
       `projects/${projectId}/merge_requests` +
-      `?state=merged&created_after=${timestamp}` +
+      `?state=merged&updated_after=${timestamp}` +
       `&per_page=99999`
     )
     // Get merge requests
     return this.api(url)
-    .then((response) => {
+    .then(async (response) => {
       if (!response || response.error) {
         const err = (
           (response) ? response.error : 'No response from server'
@@ -167,9 +168,22 @@ export default class Gitlab {
         console.error('Could not load gitlab merge requests:', err);
         return Promise.reject(err);
       }
-      this.mergeRequests = _.filter(response, mr => {
-        return new Date(mr.merged_at) <= targetDate
+      this.mergeRequests = _.filter(response, async mr => {
+        const merged_at = new Date(mr.updated_at);
+        const t = new Date(timestamp);
+        return merged_at >= t
       });
+
+      this.mergeRequests = await Promise.all(
+        _.map(this.mergeRequests, async mr => {
+          mr.release_tag = await source.getMergeRequestRelease(
+            mr.merge_commit_sha
+          )
+          return mr;
+        })
+      )
+
+
       return this.mergeRequests;
     });
   }

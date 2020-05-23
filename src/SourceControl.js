@@ -1,6 +1,8 @@
-import Slack from './Slack';
+import semver from 'semver';
 import git from 'simple-git';
 import exec from 'child_process';
+
+import Slack from './Slack';
 
 /**
  * Connect to the source control system and return commit logs for a range.
@@ -56,6 +58,23 @@ export default class SourceControl {
         return resolve(response)
       })
     })
+  }
+
+  getMergeRequestRelease(mergeCommitSha) {
+    return new Promise((resolve, reject) => {
+      git().raw(
+        [
+          'describe',
+          '--contains',
+          mergeCommitSha,
+        ], (err, result) => {
+          if (err) {
+            return reject(err)
+          }
+          const tag = result.split("~")[0].replace("v", "")
+          return resolve(semver.clean(tag))
+        });
+    }) 
   }
 
   getTagTimestamp(tag) {

@@ -96,8 +96,6 @@ async function runProgram() {
       program.summary = undefined
     }
 
-
-
     // Get logs
     const range = getRangeObject(config);
     // Release flag used, but no name passed
@@ -107,7 +105,7 @@ async function runProgram() {
     const commitLogs = await source.getCommitLogs(gitPath, range);
     const changelog = await jira.generate(commitLogs, program.release);
     const projectName = await source.getProjectName()
-    const fromTagTimestamp = await source.getTagTimestamp(
+    let fromTagTimestamp = await source.getTagTimestamp(
       range.from
     );
     const targetTagTimestamp = await source.getTagTimestamp(
@@ -115,11 +113,27 @@ async function runProgram() {
     );
     const latestTag = await source.getLastestTag();
     const previousTag = await source.getPreviousTag();
-    const mergeRequests = await gitlab.getMergeRequests(
+
+    let mergeRequests = await gitlab.getMergeRequests(
+      source,
       projectName,
       fromTagTimestamp,
       targetTagTimestamp
     );
+
+    mergeRequests = _.filter(mergeRequests, {
+      release_tag: (range.to).replace("v", "")
+    })
+
+    // adds the merge request associated tag
+    // await _.map(mergeRequests, async mr => {
+    //   mr.release_tag = await source.getMergeRequestRelease(
+    //     mr.merge_commit_sha
+    //   )
+    //   return mr
+    // })
+    // console.log('mergeRequests: ', mergeRequests);
+
 
     // Template data template
     let data = await transformCommitLogs(config, changelog);
