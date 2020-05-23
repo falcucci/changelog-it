@@ -6,7 +6,7 @@ Generates a changelog of Jira issues from your git history and, optionally, atta
 For example:
 
 ```bash
-$ changelog-it --range origin/prod...origin/master --slack --release
+$ changelog-it --range origin/prod...origin/master --release --gmudd --summary "some summary..."
 ```
 
 take a look on [this](https://github.com/falcucci/changelog-it/blob/master/changelog.example.md) file to check how it will looks like
@@ -115,6 +115,41 @@ alias release-me='curl -LsS https://raw.githubusercontent.com/falcucci/release-m
 and run:
 ```bash
 release-me <semantic-version> <summary>
+```
+
+### GitLab CI
+
+**note: this requires npm to run+**
+
+Store the following envs in [GitLab CI variable](https://docs.gitlab.com/ee/ci/variables/#variables).
+
+| name | description |
+| ---- | ----------- |
+| `GITLAB_API_KEY`  | Gitlab api key |
+| `SLACK_API_KEY`   | Slack api key |
+| `SLACK_CHANNELS`  | Slack channels ids separeted by comma |
+| `GMUD_CHANNEL`    | Slack gmud channels ids separeted by comma |
+
+#### .gitlab-ci.yml sample
+
+```yaml
+changelog:
+  script:
+    - changelog-it v1.0.0...v2.0.0 --release --gmud
+    # Or using aliases above if you have it in a package.json
+    - npm run changelog
+    # Or using some script
+    - curl -LsS https://raw.githubusercontent.com/falcucci/release-me/master/ci-changelog-it.sh | bash -s
+```
+
+You can use changelog-it to generate changelogs and gmuds from anywhere with following
+environment variables.
+
+```shell
+$ export GITLAB_API_KEY=haya14busa
+$ export SLACK_API_KEY=haya14busa
+$ export SLACK_CHANNELS=APOISFDUP
+$ export GMUD_CHANNEL=PAOISUFOPUAS
 ```
 
 ## API
