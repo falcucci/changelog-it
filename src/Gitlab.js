@@ -208,9 +208,14 @@ export default class Gitlab {
 
       this.mergeRequests = await Promise.all(
         _.map(this.mergeRequests, async mr => {
-          mr.release_tag = await source.getMergeRequestRelease(
-            mr.merge_commit_sha
-          )
+          try {
+            mr.release_tag = await source.getMergeRequestRelease(
+              mr.merge_commit_sha
+            )
+          } catch (e) {
+            console.log('e: ', e);
+            return mr
+          }
           return mr;
         })
       )
