@@ -48,6 +48,9 @@ module.exports = {
       user: '', // can be the organization/username as well
       host: '',
       apiKey: ''
+    },
+    gmud: {
+      user: '', // can be the organization/username as well
     }
   },
 

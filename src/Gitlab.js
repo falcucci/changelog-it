@@ -128,8 +128,8 @@ export default class Gitlab {
     }
 
     const user = (
-      this.config.gitlab.api.user
-      ? `${this.config.gitlab.api.user}/`
+      this.config.gitlab.gmud.user
+      ? `${this.config.gitlab.gmud.user}/`
       : ''
     )
     const id = encodeURIComponent(`${user}${gmudRepo}`)
