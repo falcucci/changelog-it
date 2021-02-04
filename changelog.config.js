@@ -77,10 +77,8 @@ module.exports = {
 
     // notify your gmud channel
     gmud: {
-
       // This can be a channel string ('#mychannel`) or a channel ID.
       channel: '',
-
       template:
       `
 DATA E HORA: Após aprovação da GMUD
