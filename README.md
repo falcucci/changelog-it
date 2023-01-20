@@ -1,30 +1,44 @@
 Changelog-it
 ------------------------
 
-Generates a changelog of Jira issues from your git history and, optionally, attach all issues to a release.
+Changelog-it is a command line tool that helps you manage a changelog file for your project. It makes it easy to add new entries to the changelog, and it also provides commands to help you format and present the changelog in a way that is easy for users to read.
+
+The tool is written in JavaScript and can be installed using npm. Once it's installed, you can run changelog-it from the command line to see a list of available commands.
+
+Some of the features of the tool include:
+
+- Adding entries to the changelog: The add command allows you to add a new entry to the changelog. You can specify the type of entry (e.g. `Added`, `Changed`, `Fixed`), a summary of the change, and an optional description.
+- Formatting the changelog: The format command can be used to format the changelog in a way that is easy to read. It groups entries by type and sorts them by date.
+- Generating a release file: You can use the release command to generate a markdown file with the latest changes and upload it to your repository.
+- Customizable templates: You can set custom templates in order to format the generated changelog to your specific needs.
+- The tool is flexible and easy to use, and it's a great way to keep track of the changes in your project.
+
+You can start using the tool by installing it with npm, and following the documentation provided in the page for further usage.
+
+here are some available integrations we do to generate the release:
+
+| Jira         |  Github       |   Gitlab       |   Slack        |  
+|--------------| --------------|  --------------|  --------------|  
 
 For example:
 
 ```bash
-$ changelog-it --range origin/prod...origin/master --release --gmudd --summary "some summary..."
+changelog-it --range origin/prod...origin/master --release --gmudd --summary "some summary..."
 ```
 
 take a look on [this](https://github.com/falcucci/changelog-it/blob/master/changelog.example.md) file to check how it will looks like
 
-
-You can also have it automatically post to slack!
+You can also have it automatically post to slack by using the `--slack` flag.
 
 ## How it works
 
 The script looks for Jira issue keys, surrounded by square brackets (i.e. `[DEV-123]`), in the git commit logs. When it finds one, it associates that Jira issue ticket with that commit and adds it to the changelog.
-
 
 ## Installation
 
 ```bash
 npm install -g -S @falcucci/changelog-it
 ```
-
 
 ## Configuration
 
