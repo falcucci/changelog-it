@@ -1,8 +1,7 @@
 use ::reqwest::blocking::Client;
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery};
-use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
-
 use milestone_query::MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes;
+use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
 
 #[allow(clippy::upper_case_acronyms)]
 type URI = String;

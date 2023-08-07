@@ -35,7 +35,7 @@ struct Changelog {
   labels: String,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
   let args: Args = Args::parse();
 
   let future = github_graphql::get_pull_requests(
@@ -61,5 +61,4 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   };
 
   println!("{}", changelog.render().unwrap());
-  Ok(())
 }
