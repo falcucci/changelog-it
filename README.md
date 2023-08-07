@@ -29,7 +29,7 @@ To see all values suported, look at the `changelog.config.js` file at the root o
 
 ## Releases
 
-You can automatically attach Jira issues to a release with the `--release` flag. For example, let's say we want to add all issues in the changelog to the "sprint-12" release:
+You can automatically attach pull requests to a release with the `--release` flag. For example, let's say we want to add all issues in the changelog to the "1.73.0" release:
 
 ```bash
 changelog-it --owner rust-lang --project rust --release 1.73.0 --github-token <token>
