@@ -1,4 +1,5 @@
 use ::reqwest::blocking::Client;
+use futures::executor::block_on;
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery};
 use milestone_query::MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes;
 use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
@@ -38,6 +39,16 @@ fn set_headers(token: &str) -> ::reqwest::header::HeaderMap {
   headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
   headers.insert(AUTHORIZATION, format!("Bearer {}", token).parse().unwrap());
   headers
+}
+
+pub fn fetch_pull_requests(args: &super::Args) -> Vec<PullRequest> {
+  let pull_requests = block_on(get_pull_requests(
+    &args.owner,
+    &args.project,
+    &args.release,
+    &args.github_token,
+  ));
+  pull_requests.unwrap()
 }
 
 pub async fn get_pull_requests(
@@ -111,17 +122,13 @@ fn get_labels(pr: &Option<MilestoneQueryRepositoryMilestonesNodesPullRequestsNod
     .unwrap_or_else(Vec::new)
 }
 
-pub fn format_pull_requests_to_md(
-  pull_requests: &Result<Vec<PullRequest>, Box<dyn std::error::Error>>,
-) -> String {
+pub fn format_pull_requests_to_md(pull_requests: &[PullRequest]) -> String {
   format_items_to_md(pull_requests, |pr| {
     format!("- [{}]({})\n", pr.title, format_url(pr.url.to_string()))
   })
 }
 
-pub fn format_contributors_to_md(
-  pull_requests: &Result<Vec<PullRequest>, Box<dyn std::error::Error>>,
-) -> String {
+pub fn format_contributors_to_md(pull_requests: &[PullRequest]) -> String {
   format_items_to_md(pull_requests, |pr| {
     format!(
       "- [@{}]({})\n",
@@ -131,9 +138,7 @@ pub fn format_contributors_to_md(
   })
 }
 
-pub fn format_labels_to_md(
-  pull_requests: &Result<Vec<PullRequest>, Box<dyn std::error::Error>>,
-) -> String {
+pub fn format_labels_to_md(pull_requests: &[PullRequest]) -> String {
   format_items_to_md(pull_requests, |pr| {
     pr.labels
       .iter()
@@ -142,17 +147,11 @@ pub fn format_labels_to_md(
   })
 }
 
-fn format_items_to_md<F>(
-  pull_requests: &Result<Vec<PullRequest>, Box<dyn std::error::Error>>,
-  format_fn: F,
-) -> String
+fn format_items_to_md<F>(pull_requests: &[PullRequest], format_fn: F) -> String
 where
   F: Fn(&PullRequest) -> String,
 {
-  match pull_requests {
-    Ok(pull_requests) => pull_requests.iter().map(format_fn).collect::<String>(),
-    Err(e) => format!("Error: {}", e),
-  }
+  pull_requests.iter().map(format_fn).collect::<String>()
 }
 
 fn format_url(url: String) -> String {

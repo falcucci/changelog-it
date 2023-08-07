@@ -1,7 +1,5 @@
 use askama::Template;
-use chrono::Utc;
 use clap::Parser;
-use futures::executor::block_on;
 use log::info;
 
 mod github_graphql;
@@ -10,7 +8,7 @@ mod templates;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-struct Args {
+pub struct Args {
   #[arg(short, long)]
   release: String,
   #[arg(short, long)]
@@ -24,25 +22,10 @@ struct Args {
 fn main() {
   logger::init();
   let args: Args = Args::parse();
-  let future = github_graphql::get_pull_requests(
-    &args.owner,
-    &args.project,
-    &args.release,
-    &args.github_token,
-  );
-  let pull_requests = block_on(future);
+  let pull_requests = github_graphql::fetch_pull_requests(&args);
   let pr_markdown = github_graphql::format_pull_requests_to_md(&pull_requests);
   let contributors = github_graphql::format_contributors_to_md(&pull_requests);
   let labels = github_graphql::format_labels_to_md(&pull_requests);
-  let today = Utc::now().date_naive();
-  let changelog = templates::Changelog {
-    owner: args.owner,
-    project: args.project,
-    release: args.release,
-    date: today,
-    pull_requests: pr_markdown,
-    contributors,
-    labels,
-  };
+  let changelog = templates::create_changelog(&args, &pr_markdown, &contributors, &labels);
   info!("{}", changelog.render().unwrap());
 }
