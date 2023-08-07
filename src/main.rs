@@ -32,6 +32,7 @@ struct Changelog {
   github_token: String,
   date: NaiveDate,
   pull_requests: String,
+  contributors: String,
 }
 
 // This function does not consume the arguments
@@ -47,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   let pull_requests = block_on(future);
   let pr_markdown = format_pull_requests_to_md(&pull_requests);
-  println!("hey 1{}", pr_markdown);
+  let contributors = format_contributors_to_md(&pull_requests);
   let changelog = Changelog {
     owner: args.owner,
     project: args.project,
@@ -55,6 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     github_token: args.github_token,
     date: NaiveDate::from_ymd_opt(2021, 1, 1).unwrap(),
     pull_requests: pr_markdown,
+    contributors,
   };
 
   println!("{}", changelog.render().unwrap());
@@ -78,6 +80,32 @@ fn format_pull_requests_to_md(
         ));
       });
       pull_requests_md.to_string()
+    }
+    Err(e) => format!("Error: {}", e),
+  }
+}
+
+fn format_contributors_to_md(
+  pull_requests: &Result<
+    std::vec::Vec<github_graphql::PullRequest>,
+    std::boxed::Box<dyn std::error::Error>,
+  >,
+) -> String {
+  match pull_requests {
+    Ok(pull_requests) => {
+      let mut contributors = String::new();
+      pull_requests.iter().for_each(|pr| {
+        contributors.push_str(&format!(
+          "- [{}]({})\n",
+          pr.author.login,
+          pr.author
+            .url
+            .to_string()
+            .replace("api.", "")
+            .replace("users/", "")
+        ));
+      });
+      contributors.to_string()
     }
     Err(e) => format!("Error: {}", e),
   }

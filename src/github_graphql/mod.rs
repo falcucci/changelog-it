@@ -1,6 +1,5 @@
 use ::reqwest::blocking::Client;
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery};
-use log::info;
 use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
 
 use crate::github_graphql;
@@ -21,8 +20,9 @@ struct Label {
   name: String,
 }
 
-struct Author {
-  login: String,
+pub struct Author {
+  pub login: String,
+  pub url: String,
 }
 
 pub struct PullRequest {
@@ -31,7 +31,7 @@ pub struct PullRequest {
   pub url: URI,
   pub number: i64,
   labels: Vec<Label>,
-  author: Author,
+  pub author: Author,
 }
 
 fn set_headers(token: &str) -> ::reqwest::header::HeaderMap {
@@ -64,13 +64,7 @@ pub async fn get_pull_requests(
   .unwrap();
   let response_data: milestone_query::ResponseData =
     response_body.data.expect("missing response data");
-  info!("{:?}", response_data);
-  println!("{:?}", response_data);
   let pull_requests = map_pull_request(&response_data);
-  pull_requests.iter().for_each(|pr| {
-    println!("{:?}", pr.title);
-    println!("{:?}", pr.url);
-  });
   Ok(pull_requests)
 }
 
@@ -98,6 +92,7 @@ fn map_pull_request(response_data: &milestone_query::ResponseData) -> Vec<PullRe
       labels: get_labels(pr),
       author: Author {
         login: pr.as_ref().unwrap().author.as_ref().unwrap().login.clone(),
+        url: pr.as_ref().unwrap().author.as_ref().unwrap().url.clone(),
       },
     })
     .collect::<Vec<PullRequest>>()

@@ -20,6 +20,7 @@ query MilestoneQuery($owner: String!, $name: String!, $milestone: String!) {
             author {
               __typename
               login
+              url
             }
           }
         }
