@@ -97,6 +97,48 @@ fn map_pull_request(response_data: &milestone_query::ResponseData) -> Vec<PullRe
     .collect::<Vec<PullRequest>>()
 }
 
+pub fn format_pull_requests_to_md(
+  pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
+) -> String {
+  match pull_requests {
+    Ok(pull_requests) => {
+      let mut pull_requests_md = String::new();
+      pull_requests.iter().for_each(|pr| {
+        pull_requests_md.push_str(&format!(
+          "- [{}]({})\n",
+          pr.title,
+          pr.url.to_string().replace("api.", "").replace("repos/", "")
+        ));
+      });
+      pull_requests_md.to_string()
+    }
+    Err(e) => format!("Error: {}", e),
+  }
+}
+
+pub fn format_contributors_to_md(
+  pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
+) -> String {
+  match pull_requests {
+    Ok(pull_requests) => {
+      let mut contributors = String::new();
+      pull_requests.iter().for_each(|pr| {
+        contributors.push_str(&format!(
+          "- [{}]({})\n",
+          pr.author.login,
+          pr.author
+            .url
+            .to_string()
+            .replace("api.", "")
+            .replace("users/", "")
+        ));
+      });
+      contributors.to_string()
+    }
+    Err(e) => format!("Error: {}", e),
+  }
+}
+
 fn get_labels(pr: &Option<MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes>) -> Vec<Label> {
   pr.as_ref()
     .and_then(|pr| pr.labels.as_ref())
@@ -111,4 +153,21 @@ fn get_labels(pr: &Option<MilestoneQueryRepositoryMilestonesNodesPullRequestsNod
         .collect::<Vec<Label>>()
     })
     .unwrap_or_else(Vec::new)
+}
+
+pub fn format_labels_to_md(
+  pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
+) -> String {
+  match pull_requests {
+    Ok(pull_requests) => {
+      let mut labels = String::new();
+      pull_requests.iter().for_each(|pr| {
+        pr.labels.iter().for_each(|label| {
+          labels.push_str(&format!("- {}\n", label.name,));
+        });
+      });
+      labels.to_string()
+    }
+    Err(e) => format!("Error: {}", e),
+  }
 }

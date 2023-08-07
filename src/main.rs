@@ -35,7 +35,6 @@ struct Changelog {
   labels: String,
 }
 
-// This function does not consume the arguments
 fn main() -> Result<(), Box<dyn std::error::Error>> {
   let args: Args = Args::parse();
 
@@ -47,9 +46,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   );
 
   let pull_requests = block_on(future);
-  let pr_markdown = format_pull_requests_to_md(&pull_requests);
-  let contributors = format_contributors_to_md(&pull_requests);
-  let labels = format_labels_to_md(&pull_requests);
+  let pr_markdown = github_graphql::format_pull_requests_to_md(&pull_requests);
+  let contributors = github_graphql::format_contributors_to_md(&pull_requests);
+  let labels = github_graphql::format_labels_to_md(&pull_requests);
   let changelog = Changelog {
     owner: args.owner,
     project: args.project,
@@ -62,72 +61,4 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   println!("{}", changelog.render().unwrap());
   Ok(())
-}
-
-fn format_pull_requests_to_md(
-  pull_requests: &Result<
-    std::vec::Vec<github_graphql::PullRequest>,
-    std::boxed::Box<dyn std::error::Error>,
-  >,
-) -> String {
-  match pull_requests {
-    Ok(pull_requests) => {
-      let mut pull_requests_md = String::new();
-      pull_requests.iter().for_each(|pr| {
-        pull_requests_md.push_str(&format!(
-          "- [{}]({})\n",
-          pr.title,
-          pr.url.to_string().replace("api.", "").replace("repos/", "")
-        ));
-      });
-      pull_requests_md.to_string()
-    }
-    Err(e) => format!("Error: {}", e),
-  }
-}
-
-fn format_contributors_to_md(
-  pull_requests: &Result<
-    std::vec::Vec<github_graphql::PullRequest>,
-    std::boxed::Box<dyn std::error::Error>,
-  >,
-) -> String {
-  match pull_requests {
-    Ok(pull_requests) => {
-      let mut contributors = String::new();
-      pull_requests.iter().for_each(|pr| {
-        contributors.push_str(&format!(
-          "- [{}]({})\n",
-          pr.author.login,
-          pr.author
-            .url
-            .to_string()
-            .replace("api.", "")
-            .replace("users/", "")
-        ));
-      });
-      contributors.to_string()
-    }
-    Err(e) => format!("Error: {}", e),
-  }
-}
-
-fn format_labels_to_md(
-  pull_requests: &Result<
-    std::vec::Vec<github_graphql::PullRequest>,
-    std::boxed::Box<dyn std::error::Error>,
-  >,
-) -> String {
-  match pull_requests {
-    Ok(pull_requests) => {
-      let mut labels = String::new();
-      pull_requests.iter().for_each(|pr| {
-        pr.labels.iter().for_each(|label| {
-          labels.push_str(&format!("- {}\n", label.name,));
-        });
-      });
-      labels.to_string()
-    }
-    Err(e) => format!("Error: {}", e),
-  }
 }
