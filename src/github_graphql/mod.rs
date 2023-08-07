@@ -47,7 +47,6 @@ pub async fn get_pull_requests(
   name: &str,
   milestone: &str,
   token: &str,
-  // ) -> Result<graphql_client::Response<milestone_query::ResponseData>, Box<dyn std::error::Error>> {
 ) -> Result<Vec<github_graphql::PullRequest>, Box<dyn std::error::Error>> {
   let headers = set_headers(token);
   let client = Client::builder().default_headers(headers).build()?;
