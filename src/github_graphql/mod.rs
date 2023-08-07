@@ -48,7 +48,6 @@ pub async fn get_pull_requests(
 ) -> Result<Vec<PullRequest>, Box<dyn std::error::Error>> {
   let headers = set_headers(token);
   let client = Client::builder().default_headers(headers).build()?;
-  // should be a parameter
   let variables = milestone_query::Variables {
     owner: owner.to_string(),
     name: name.to_string(),
