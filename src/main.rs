@@ -1,6 +1,4 @@
-use askama::Template;
 use clap::Parser;
-use log::info;
 
 mod github_graphql;
 mod logger;
@@ -27,5 +25,5 @@ fn main() {
   let contributors = github_graphql::format_contributors_to_md(&pull_requests);
   let labels = github_graphql::format_labels_to_md(&pull_requests);
   let changelog = templates::create_changelog(&args, &pr_markdown, &contributors, &labels);
-  info!("{}", changelog.render().unwrap());
+  logger::log_changelog(&changelog);
 }
