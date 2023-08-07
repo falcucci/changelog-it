@@ -1,5 +1,5 @@
 use askama::Template;
-use chrono::NaiveDate;
+use chrono::{NaiveDate, Utc};
 use clap::Parser;
 use futures::executor::block_on;
 
@@ -49,11 +49,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   let pr_markdown = github_graphql::format_pull_requests_to_md(&pull_requests);
   let contributors = github_graphql::format_contributors_to_md(&pull_requests);
   let labels = github_graphql::format_labels_to_md(&pull_requests);
+  let today = Utc::now().date_naive();
   let changelog = Changelog {
     owner: args.owner,
     project: args.project,
     release: args.release,
-    date: NaiveDate::from_ymd_opt(2021, 1, 1).unwrap(),
+    date: today,
     pull_requests: pr_markdown,
     contributors,
     labels,
