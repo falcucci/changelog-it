@@ -1,11 +1,12 @@
 use askama::Template;
-use chrono::{NaiveDate, Utc};
+use chrono::Utc;
 use clap::Parser;
 use futures::executor::block_on;
 use log::info;
 
 mod github_graphql;
 mod logger;
+mod templates;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -18,18 +19,6 @@ struct Args {
   project: String,
   #[arg(short, long)]
   github_token: String,
-}
-
-#[derive(Template)]
-#[template(path = "changelog.md")]
-struct Changelog {
-  owner: String,
-  project: String,
-  release: String,
-  date: NaiveDate,
-  pull_requests: String,
-  contributors: String,
-  labels: String,
 }
 
 fn main() {
@@ -46,7 +35,7 @@ fn main() {
   let contributors = github_graphql::format_contributors_to_md(&pull_requests);
   let labels = github_graphql::format_labels_to_md(&pull_requests);
   let today = Utc::now().date_naive();
-  let changelog = Changelog {
+  let changelog = templates::Changelog {
     owner: args.owner,
     project: args.project,
     release: args.release,
