@@ -1,5 +1,5 @@
 use env_logger::Builder;
 
-pub fn init_logger() {
+pub fn init() {
   Builder::new().filter(None, log::LevelFilter::Info).init();
 }

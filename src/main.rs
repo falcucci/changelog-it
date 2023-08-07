@@ -22,7 +22,7 @@ struct Args {
 }
 
 fn main() {
-  logger::init_logger();
+  logger::init();
   let args: Args = Args::parse();
   let future = github_graphql::get_pull_requests(
     &args.owner,
