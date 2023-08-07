@@ -1,0 +1,12 @@
+# rust-lang/rust - 1.73.0 (2023-08-07) 
+
+- [Issue numbers are enforced on active features; remove FIXME](https://github.com/rust-lang/rust/pull/114556)
+- [Remove FIXME about NLL diagnostic that is already improved](https://github.com/rust-lang/rust/pull/114558)
+- [update Miri](https://github.com/rust-lang/rust/pull/114560)
+- [stabilize abi_thiscall](https://github.com/rust-lang/rust/pull/114562)
+- [Rollup of 6 pull requests](https://github.com/rust-lang/rust/pull/114565)
+- [Rollup of 8 pull requests](https://github.com/rust-lang/rust/pull/114569)
+- [[miri][typo] Fix a typo in a vector_block comment.](https://github.com/rust-lang/rust/pull/114570)
+- [CI: do not hide error logs in a group](https://github.com/rust-lang/rust/pull/114573)
+- [:arrow_up: `rust-analyzer`](https://github.com/rust-lang/rust/pull/114576)
+- [Rollup of 9 pull requests](https://github.com/rust-lang/rust/pull/114585)
