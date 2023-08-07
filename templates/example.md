@@ -10,3 +10,16 @@
 - [CI: do not hide error logs in a group](https://github.com/rust-lang/rust/pull/114573)
 - [:arrow_up: `rust-analyzer`](https://github.com/rust-lang/rust/pull/114576)
 - [Rollup of 9 pull requests](https://github.com/rust-lang/rust/pull/114585)
+
+### Contributors
+
+- [Enselic](https://github.com/Enselic)
+- [Enselic](https://github.com/Enselic)
+- [RalfJung](https://github.com/RalfJung)
+- [Trolldemorted](https://github.com/Trolldemorted)
+- [matthiaskrgr](https://github.com/matthiaskrgr)
+- [matthiaskrgr](https://github.com/matthiaskrgr)
+- [ttsugriy](https://github.com/ttsugriy)
+- [Kobzol](https://github.com/Kobzol)
+- [lnicola](https://github.com/lnicola)
+- [matthiaskrgr](https://github.com/matthiaskrgr)
