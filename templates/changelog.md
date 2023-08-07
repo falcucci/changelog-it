@@ -1,7 +1,11 @@
-# {{ owner}}/{{ project }} - {{ release }} ({{date}}) 
+# {{ owner }}/{{ project }} - {{ release }} ({{ date }}) 
 
 {{ pull_requests }}
 
 ### Contributors
 
 {{ contributors }}
+
+### Tags
+
+{{ labels }}
