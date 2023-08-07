@@ -98,13 +98,13 @@ fn map_pull_request(response_data: &milestone_query::ResponseData) -> Vec<PullRe
       title: pr.as_ref().unwrap().title.clone(),
       url: pr.as_ref().unwrap().url.clone(),
       number: pr.as_ref().unwrap().number,
-      labels: get_labels(&pr),
+      labels: get_labels(pr),
     })
     .collect::<Vec<PullRequest>>()
 }
 
 fn get_labels(
-  pr: &&std::option::Option<
+  pr: &std::option::Option<
     github_graphql::milestone_query::MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes,
   >,
 ) -> Vec<Label> {

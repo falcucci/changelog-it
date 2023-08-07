@@ -56,7 +56,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     &changelog.github_token,
   );
   let pull_requests = block_on(future);
-  println!("hey {:?}", pull_requests);
   println!("{}", changelog.render().unwrap());
   Ok(())
 }
