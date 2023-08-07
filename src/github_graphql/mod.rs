@@ -2,8 +2,7 @@ use ::reqwest::blocking::Client;
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery};
 use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
 
-use crate::github_graphql;
-use github_graphql::milestone_query::MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes;
+use milestone_query::MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes;
 
 #[allow(clippy::upper_case_acronyms)]
 type URI = String;
@@ -16,8 +15,8 @@ type URI = String;
 )]
 struct MilestoneQuery;
 
-struct Label {
-  name: String,
+pub struct Label {
+  pub name: String,
 }
 
 pub struct Author {
@@ -30,7 +29,7 @@ pub struct PullRequest {
   pub title: String,
   pub url: URI,
   pub number: i64,
-  labels: Vec<Label>,
+  pub labels: Vec<Label>,
   pub author: Author,
 }
 
@@ -47,7 +46,7 @@ pub async fn get_pull_requests(
   name: &str,
   milestone: &str,
   token: &str,
-) -> Result<Vec<github_graphql::PullRequest>, Box<dyn std::error::Error>> {
+) -> Result<Vec<PullRequest>, Box<dyn std::error::Error>> {
   let headers = set_headers(token);
   let client = Client::builder().default_headers(headers).build()?;
   // should be a parameter
