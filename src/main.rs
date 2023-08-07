@@ -1,11 +1,11 @@
 use askama::Template;
 use chrono::{NaiveDate, Utc};
 use clap::Parser;
-use env_logger::Builder;
 use futures::executor::block_on;
 use log::info;
 
 mod github_graphql;
+mod logger;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -32,12 +32,8 @@ struct Changelog {
   labels: String,
 }
 
-fn init_logger() {
-  Builder::new().filter(None, log::LevelFilter::Info).init();
-}
-
 fn main() {
-  init_logger();
+  logger::init_logger();
   let args: Args = Args::parse();
   let future = github_graphql::get_pull_requests(
     &args.owner,
