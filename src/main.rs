@@ -64,5 +64,5 @@ fn main() {
     contributors,
     labels,
   };
-  info!("changelog: {}", changelog.render().unwrap());
+  info!("{}", changelog.render().unwrap());
 }
