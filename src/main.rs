@@ -10,17 +10,12 @@ mod github_graphql;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-  /// Name of the person to greet
   #[arg(short, long)]
   release: String,
-
   #[arg(short, long)]
   owner: String,
-
   #[arg(short, long)]
   project: String,
-
-  /// github token
   #[arg(short, long)]
   github_token: String,
 }
