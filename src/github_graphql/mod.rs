@@ -101,17 +101,17 @@ pub fn format_pull_requests_to_md(
   pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
 ) -> String {
   match pull_requests {
-    Ok(pull_requests) => {
-      let mut pull_requests_md = String::new();
-      pull_requests.iter().for_each(|pr| {
-        pull_requests_md.push_str(&format!(
+    Ok(pull_requests) => pull_requests
+      .iter()
+      .map(|pr| {
+        format!(
           "- [{}]({})\n",
           pr.title,
           pr.url.to_string().replace("api.", "").replace("repos/", "")
-        ));
-      });
-      pull_requests_md.to_string()
-    }
+        )
+      })
+      .collect::<Vec<String>>()
+      .join(""),
     Err(e) => format!("Error: {}", e),
   }
 }
@@ -120,10 +120,10 @@ pub fn format_contributors_to_md(
   pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
 ) -> String {
   match pull_requests {
-    Ok(pull_requests) => {
-      let mut contributors = String::new();
-      pull_requests.iter().for_each(|pr| {
-        contributors.push_str(&format!(
+    Ok(pull_requests) => pull_requests
+      .iter()
+      .map(|pr| {
+        format!(
           "- [{}]({})\n",
           pr.author.login,
           pr.author
@@ -131,10 +131,10 @@ pub fn format_contributors_to_md(
             .to_string()
             .replace("api.", "")
             .replace("users/", "")
-        ));
-      });
-      contributors.to_string()
-    }
+        )
+      })
+      .collect::<Vec<String>>()
+      .join(""),
     Err(e) => format!("Error: {}", e),
   }
 }
@@ -159,15 +159,16 @@ pub fn format_labels_to_md(
   pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
 ) -> String {
   match pull_requests {
-    Ok(pull_requests) => {
-      let mut labels = String::new();
-      pull_requests.iter().for_each(|pr| {
-        pr.labels.iter().for_each(|label| {
-          labels.push_str(&format!("- {}\n", label.name,));
-        });
-      });
-      labels.to_string()
-    }
+    Ok(pull_requests) => pull_requests
+      .iter()
+      .map(|pr| {
+        pr.labels
+          .iter()
+          .map(|label| format!("- {}\n", label.name))
+          .collect::<String>()
+      })
+      .collect::<Vec<String>>()
+      .join(""),
     Err(e) => format!("Error: {}", e),
   }
 }
