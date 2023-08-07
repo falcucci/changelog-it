@@ -45,6 +45,9 @@ fn set_headers(token: &str) -> ::reqwest::header::HeaderMap {
 }
 
 pub async fn get_pull_requests(
+  owner: &str,
+  name: &str,
+  milestone: &str,
   token: &str,
   // ) -> Result<graphql_client::Response<milestone_query::ResponseData>, Box<dyn std::error::Error>> {
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -52,9 +55,9 @@ pub async fn get_pull_requests(
   let client = Client::builder().default_headers(headers).build()?;
   // should be a parameter
   let variables = milestone_query::Variables {
-    owner: "rust-lang".to_string(),
-    name: "rust".to_string(),
-    milestone: "1.73.0".to_string(),
+    owner: owner.to_string(),
+    name: name.to_string(),
+    milestone: milestone.to_string(),
   };
   let response_body = post_graphql_blocking::<MilestoneQuery, _>(
     &client,
