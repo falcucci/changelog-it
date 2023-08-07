@@ -96,48 +96,6 @@ fn map_pull_request(response_data: &milestone_query::ResponseData) -> Vec<PullRe
     .collect::<Vec<PullRequest>>()
 }
 
-pub fn format_pull_requests_to_md(
-  pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
-) -> String {
-  match pull_requests {
-    Ok(pull_requests) => pull_requests
-      .iter()
-      .map(|pr| {
-        format!(
-          "- [{}]({})\n",
-          pr.title,
-          pr.url.to_string().replace("api.", "").replace("repos/", "")
-        )
-      })
-      .collect::<Vec<String>>()
-      .join(""),
-    Err(e) => format!("Error: {}", e),
-  }
-}
-
-pub fn format_contributors_to_md(
-  pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
-) -> String {
-  match pull_requests {
-    Ok(pull_requests) => pull_requests
-      .iter()
-      .map(|pr| {
-        format!(
-          "- [@{}]({})\n",
-          pr.author.login,
-          pr.author
-            .url
-            .to_string()
-            .replace("api.", "")
-            .replace("users/", "")
-        )
-      })
-      .collect::<Vec<String>>()
-      .join(""),
-    Err(e) => format!("Error: {}", e),
-  }
-}
-
 fn get_labels(pr: &Option<MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes>) -> Vec<Label> {
   pr.as_ref()
     .and_then(|pr| pr.labels.as_ref())
@@ -154,20 +112,53 @@ fn get_labels(pr: &Option<MilestoneQueryRepositoryMilestonesNodesPullRequestsNod
     .unwrap_or_else(Vec::new)
 }
 
-pub fn format_labels_to_md(
-  pull_requests: &Result<std::vec::Vec<PullRequest>, std::boxed::Box<dyn std::error::Error>>,
+pub fn format_pull_requests_to_md(
+  pull_requests: &Result<Vec<PullRequest>, Box<dyn std::error::Error>>,
 ) -> String {
-  match pull_requests {
-    Ok(pull_requests) => pull_requests
+  format_items_to_md(pull_requests, |pr| {
+    format!("- [{}]({})\n", pr.title, format_url(pr.url.to_string()))
+  })
+}
+
+pub fn format_contributors_to_md(
+  pull_requests: &Result<Vec<PullRequest>, Box<dyn std::error::Error>>,
+) -> String {
+  format_items_to_md(pull_requests, |pr| {
+    format!(
+      "- [@{}]({})\n",
+      pr.author.login,
+      format_url(pr.author.url.to_string())
+    )
+  })
+}
+
+pub fn format_labels_to_md(
+  pull_requests: &Result<Vec<PullRequest>, Box<dyn std::error::Error>>,
+) -> String {
+  format_items_to_md(pull_requests, |pr| {
+    pr.labels
       .iter()
-      .map(|pr| {
-        pr.labels
-          .iter()
-          .map(|label| format!("- {}\n", label.name))
-          .collect::<String>()
-      })
-      .collect::<Vec<String>>()
-      .join(""),
+      .map(|label| format!("- {}\n", label.name))
+      .collect()
+  })
+}
+
+fn format_items_to_md<F>(
+  pull_requests: &Result<Vec<PullRequest>, Box<dyn std::error::Error>>,
+  format_fn: F,
+) -> String
+where
+  F: Fn(&PullRequest) -> String,
+{
+  match pull_requests {
+    Ok(pull_requests) => pull_requests.iter().map(format_fn).collect::<String>(),
     Err(e) => format!("Error: {}", e),
   }
+}
+
+fn format_url(url: String) -> String {
+  url
+    .replace("api.", "")
+    .replace("repos/", "")
+    .replace("users/", "")
 }
