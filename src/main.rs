@@ -31,31 +31,54 @@ struct Changelog {
   release: String,
   github_token: String,
   date: NaiveDate,
+  pull_requests: String,
 }
 
 // This function does not consume the arguments
 fn main() -> Result<(), Box<dyn std::error::Error>> {
   let args: Args = Args::parse();
-  let changelog: Changelog = Changelog {
+
+  let future = github_graphql::get_pull_requests(
+    &args.owner,
+    &args.project,
+    &args.release,
+    &args.github_token,
+  );
+
+  let pull_requests = block_on(future);
+  let pr_markdown = format_pull_requests_to_md(&pull_requests);
+  println!("hey 1{}", pr_markdown);
+  let changelog = Changelog {
     owner: args.owner,
     project: args.project,
     release: args.release,
     github_token: args.github_token,
     date: NaiveDate::from_ymd_opt(2021, 1, 1).unwrap(),
+    pull_requests: pr_markdown,
   };
 
-  println!("{:?}", changelog.release);
-  println!("{:?}", changelog.github_token);
-  println!("{:?}", changelog.owner);
-  println!("{:?}", changelog.project);
-
-  let future = github_graphql::get_pull_requests(
-    &changelog.owner,
-    &changelog.project,
-    &changelog.release,
-    &changelog.github_token,
-  );
-  let pull_requests = block_on(future);
   println!("{}", changelog.render().unwrap());
   Ok(())
+}
+
+fn format_pull_requests_to_md(
+  pull_requests: &Result<
+    std::vec::Vec<github_graphql::PullRequest>,
+    std::boxed::Box<dyn std::error::Error>,
+  >,
+) -> String {
+  match pull_requests {
+    Ok(pull_requests) => {
+      let mut pull_requests_md = String::new();
+      pull_requests.iter().for_each(|pr| {
+        pull_requests_md.push_str(&format!(
+          "- [{}]({})\n",
+          pr.title,
+          pr.url.to_string().replace("api.", "").replace("repos/", "")
+        ));
+      });
+      pull_requests_md.to_string()
+    }
+    Err(e) => format!("Error: {}", e),
+  }
 }

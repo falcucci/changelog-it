@@ -1,8 +1,10 @@
 use ::reqwest::blocking::Client;
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery};
 use log::info;
+use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
 
 use crate::github_graphql;
+use github_graphql::milestone_query::MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes;
 
 #[allow(clippy::upper_case_acronyms)]
 type URI = String;
@@ -19,28 +21,24 @@ struct Label {
   name: String,
 }
 
-struct PullRequest {
-  id: String,
-  title: String,
-  url: URI,
-  number: i64,
+struct Author {
+  login: String,
+}
+
+pub struct PullRequest {
+  pub id: String,
+  pub title: String,
+  pub url: URI,
+  pub number: i64,
   labels: Vec<Label>,
+  author: Author,
 }
 
 fn set_headers(token: &str) -> ::reqwest::header::HeaderMap {
   let mut headers = ::reqwest::header::HeaderMap::new();
-  headers.insert(
-    ::reqwest::header::USER_AGENT,
-    ::reqwest::header::HeaderValue::from_static("rust-lang/rust"),
-  );
-  headers.insert(
-    ::reqwest::header::ACCEPT,
-    ::reqwest::header::HeaderValue::from_static("application/json"),
-  );
-  headers.insert(
-    ::reqwest::header::AUTHORIZATION,
-    format!("Bearer {}", token).parse().unwrap(),
-  );
+  headers.insert(USER_AGENT, HeaderValue::from_static("rust-lang/rust"));
+  headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
+  headers.insert(AUTHORIZATION, format!("Bearer {}", token).parse().unwrap());
   headers
 }
 
@@ -50,7 +48,7 @@ pub async fn get_pull_requests(
   milestone: &str,
   token: &str,
   // ) -> Result<graphql_client::Response<milestone_query::ResponseData>, Box<dyn std::error::Error>> {
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<Vec<github_graphql::PullRequest>, Box<dyn std::error::Error>> {
   let headers = set_headers(token);
   let client = Client::builder().default_headers(headers).build()?;
   // should be a parameter
@@ -74,7 +72,7 @@ pub async fn get_pull_requests(
     println!("{:?}", pr.title);
     println!("{:?}", pr.url);
   });
-  Ok(())
+  Ok(pull_requests)
 }
 
 fn map_pull_request(response_data: &milestone_query::ResponseData) -> Vec<PullRequest> {
@@ -99,40 +97,25 @@ fn map_pull_request(response_data: &milestone_query::ResponseData) -> Vec<PullRe
       url: pr.as_ref().unwrap().url.clone(),
       number: pr.as_ref().unwrap().number,
       labels: get_labels(pr),
+      author: Author {
+        login: pr.as_ref().unwrap().author.as_ref().unwrap().login.clone(),
+      },
     })
     .collect::<Vec<PullRequest>>()
 }
 
-fn get_labels(
-  pr: &std::option::Option<
-    github_graphql::milestone_query::MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes,
-  >,
-) -> Vec<Label> {
+fn get_labels(pr: &Option<MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes>) -> Vec<Label> {
   pr.as_ref()
-    .unwrap()
-    .labels
-    .as_ref()
-    .unwrap()
-    .nodes
-    .iter()
-    .flat_map(|labels_nodes| labels_nodes.iter())
-    .map(|label| Label {
-      name: label.as_ref().unwrap().name.clone(),
+    .and_then(|pr| pr.labels.as_ref())
+    .map(|labels| {
+      labels
+        .nodes
+        .iter()
+        .flat_map(|labels_nodes| labels_nodes.iter())
+        .map(|label| Label {
+          name: label.as_ref().unwrap().name.clone(),
+        })
+        .collect::<Vec<Label>>()
     })
-    .collect::<Vec<Label>>()
+    .unwrap_or_else(Vec::new)
 }
-
-// pr
-// .as_ref()
-// .unwrap()
-// .labels
-// .as_ref()
-// .unwrap()
-// .nodes
-// .iter()
-// .flat_map(|labels| {
-//   labels.iter().map(|label| Label {
-//     name: label.as_ref().unwrap().name.clone(),
-//   })
-// })
-// .collect(),

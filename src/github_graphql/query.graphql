@@ -17,6 +17,10 @@ query MilestoneQuery($owner: String!, $name: String!, $milestone: String!) {
                 name
               }
             }
+            author {
+              __typename
+              login
+            }
           }
         }
       }

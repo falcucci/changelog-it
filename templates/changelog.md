@@ -1,3 +1,3 @@
 # {{ owner}}/{{ project }} - {{ release }} ({{date}}) 
 
-## {{ github_token }}
+{{ pull_requests }}
