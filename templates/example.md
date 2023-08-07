@@ -13,13 +13,13 @@
 
 ### Contributors
 
-- [Enselic](https://github.com/Enselic)
-- [Enselic](https://github.com/Enselic)
-- [RalfJung](https://github.com/RalfJung)
-- [Trolldemorted](https://github.com/Trolldemorted)
-- [matthiaskrgr](https://github.com/matthiaskrgr)
-- [matthiaskrgr](https://github.com/matthiaskrgr)
-- [ttsugriy](https://github.com/ttsugriy)
-- [Kobzol](https://github.com/Kobzol)
-- [lnicola](https://github.com/lnicola)
-- [matthiaskrgr](https://github.com/matthiaskrgr)
+- [@Enselic](https://github.com/Enselic)
+- [@Enselic](https://github.com/Enselic)
+- [@RalfJung](https://github.com/RalfJung)
+- [@Trolldemorted](https://github.com/Trolldemorted)
+- [@matthiaskrgr](https://github.com/matthiaskrgr)
+- [@matthiaskrgr](https://github.com/matthiaskrgr)
+- [@ttsugriy](https://github.com/ttsugriy)
+- [@Kobzol](https://github.com/Kobzol)
+- [@lnicola](https://github.com/lnicola)
+- [@matthiaskrgr](https://github.com/matthiaskrgr)

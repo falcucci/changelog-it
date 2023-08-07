@@ -124,7 +124,7 @@ pub fn format_contributors_to_md(
       .iter()
       .map(|pr| {
         format!(
-          "- [{}]({})\n",
+          "- [@{}]({})\n",
           pr.author.login,
           pr.author
             .url
