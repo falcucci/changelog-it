@@ -1,0 +1,29 @@
+query MilestoneQuery($owner: String!, $name: String!, $milestone: String!) {
+  repository(owner: $owner, name: $name) {
+    milestones(first: 1, query: $milestone) {
+      totalCount
+      nodes {
+        pullRequests(last: 10, states: MERGED) {
+          pageInfo {
+            startCursor
+          }
+          nodes {
+            id
+            number
+            title
+            url
+            labels(last: 10) {
+              nodes {
+                name
+              }
+            }
+            author {
+              __typename
+              login
+            }
+          }
+        }
+      }
+    }
+  }
+}
