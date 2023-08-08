@@ -127,11 +127,12 @@ pub fn get_changelog_info(pull_requests: &[PullRequest]) -> (String, String, Str
 }
 
 pub async fn format_pull_requests_info(pull_requests: &[PullRequest]) -> (String, String, String) {
-  let pr_fut = format_pull_requests_to_md(pull_requests);
-  let contributors_fut = format_contributors_to_md(pull_requests);
-  let labels_fut = format_labels_to_md(pull_requests);
-  let (pr, contributors, labels) = join3(pr_fut, contributors_fut, labels_fut).await;
-  (pr, contributors, labels)
+  let pull_requests_future = format_pull_requests_to_md(pull_requests);
+  let contributors_future = format_contributors_to_md(pull_requests);
+  let labels_future = format_labels_to_md(pull_requests);
+  let (pull_requests, contributors, labels) =
+    join3(pull_requests_future, contributors_future, labels_future).await;
+  (pull_requests, contributors, labels)
 }
 
 pub async fn format_pull_requests_to_md(pull_requests: &[PullRequest]) -> String {
