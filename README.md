@@ -25,8 +25,6 @@ take a look on [this](https://github.com/falcucci/changelog-it/blob/master/templ
 cargo install changelog-it
 ```
 
-To see all values suported, look at the `changelog.config.js` file at the root of this repo.
-
 ## Releases
 
 You can automatically attach pull requests to a release with the `--release` flag. For example, let's say we want to add all issues in the changelog to the "1.73.0" release:
