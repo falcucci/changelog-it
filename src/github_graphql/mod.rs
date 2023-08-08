@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use ::reqwest::blocking::Client;
 use futures::{executor::block_on, future::join3};
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery};
@@ -142,13 +144,30 @@ pub async fn format_pull_requests_to_md(pull_requests: &[PullRequest]) -> String
 }
 
 pub async fn format_contributors_to_md(pull_requests: &[PullRequest]) -> String {
-  format_items_to_md(pull_requests, |pr| {
+  let contributors: String = format_items_to_md(pull_requests, |pr| {
     format!(
       "- [@{}]({})\n",
       pr.author.login,
       format_url(pr.author.url.to_string())
     )
-  })
+  });
+
+  unify_contributors(contributors)
+}
+
+fn unify_contributors(contributors: String) -> String {
+  let mut contributors_set = HashSet::new();
+  contributors.split('\n').for_each(|contributor| {
+    if !contributors_set.contains(contributor) {
+      contributors_set.insert(contributor);
+    }
+  });
+
+  contributors_set
+    .iter()
+    .map(|contributor| contributor.to_string())
+    .collect::<Vec<String>>()
+    .join("\n")
 }
 
 pub async fn format_labels_to_md(pull_requests: &[PullRequest]) -> String {
