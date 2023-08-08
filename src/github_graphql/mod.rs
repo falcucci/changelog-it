@@ -42,13 +42,13 @@ fn set_headers(token: &str) -> ::reqwest::header::HeaderMap {
 }
 
 pub fn fetch_pull_requests(args: &super::Args) -> Vec<PullRequest> {
-  let pull_requests = block_on(get_pull_requests(
+  block_on(get_pull_requests(
     &args.owner,
     &args.project,
     &args.release,
     &args.github_token,
-  ));
-  pull_requests.unwrap()
+  ))
+  .unwrap()
 }
 
 pub async fn get_pull_requests(
