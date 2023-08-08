@@ -139,7 +139,13 @@ pub async fn format_pull_requests_info(pull_requests: &[PullRequest]) -> (String
 
 pub async fn format_pull_requests_to_md(pull_requests: &[PullRequest]) -> String {
   format_items_to_md(pull_requests, |pr| {
-    format!("- [{}]({})\n", pr.title, format_url(pr.url.to_string()))
+    format!(
+      "- [{}]({}) - [@{}]({})\n",
+      pr.title,
+      format_url(pr.url.to_string()),
+      pr.author.login,
+      format_url(pr.author.url.to_string())
+    )
   })
 }
 
