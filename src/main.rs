@@ -21,9 +21,7 @@ fn main() {
   logger::init();
   let args: Args = Args::parse();
   let pull_requests = github_graphql::fetch_pull_requests(&args);
-  let pr_markdown = github_graphql::format_pull_requests_to_md(&pull_requests);
-  let contributors = github_graphql::format_contributors_to_md(&pull_requests);
-  let labels = github_graphql::format_labels_to_md(&pull_requests);
+  let (pr_markdown, contributors, labels) = github_graphql::get_changelog_info(&pull_requests);
   let changelog = templates::create_changelog(&args, &pr_markdown, &contributors, &labels);
   logger::log_changelog(&changelog);
 }

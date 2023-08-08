@@ -1,5 +1,5 @@
 use ::reqwest::blocking::Client;
-use futures::executor::block_on;
+use futures::{executor::block_on, future::join3};
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery};
 use milestone_query::MilestoneQueryRepositoryMilestonesNodesPullRequestsNodes;
 use reqwest::header::{HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
@@ -122,13 +122,25 @@ fn get_labels(pr: &Option<MilestoneQueryRepositoryMilestonesNodesPullRequestsNod
     .unwrap_or_else(Vec::new)
 }
 
-pub fn format_pull_requests_to_md(pull_requests: &[PullRequest]) -> String {
+pub fn get_changelog_info(pull_requests: &[PullRequest]) -> (String, String, String) {
+  block_on(format_pull_requests_info(pull_requests))
+}
+
+pub async fn format_pull_requests_info(pull_requests: &[PullRequest]) -> (String, String, String) {
+  let pr_fut = format_pull_requests_to_md(pull_requests);
+  let contributors_fut = format_contributors_to_md(pull_requests);
+  let labels_fut = format_labels_to_md(pull_requests);
+  let (pr, contributors, labels) = join3(pr_fut, contributors_fut, labels_fut).await;
+  (pr, contributors, labels)
+}
+
+pub async fn format_pull_requests_to_md(pull_requests: &[PullRequest]) -> String {
   format_items_to_md(pull_requests, |pr| {
     format!("- [{}]({})\n", pr.title, format_url(pr.url.to_string()))
   })
 }
 
-pub fn format_contributors_to_md(pull_requests: &[PullRequest]) -> String {
+pub async fn format_contributors_to_md(pull_requests: &[PullRequest]) -> String {
   format_items_to_md(pull_requests, |pr| {
     format!(
       "- [@{}]({})\n",
@@ -138,7 +150,7 @@ pub fn format_contributors_to_md(pull_requests: &[PullRequest]) -> String {
   })
 }
 
-pub fn format_labels_to_md(pull_requests: &[PullRequest]) -> String {
+pub async fn format_labels_to_md(pull_requests: &[PullRequest]) -> String {
   format_items_to_md(pull_requests, |pr| {
     pr.labels
       .iter()
