@@ -164,7 +164,7 @@ pub async fn format_contributors_to_md(pull_requests: &[PullRequest]) -> String 
 fn unify_contributors(contributors: String) -> String {
   let mut contributors_set = HashSet::new();
   contributors.split('\n').for_each(|contributor| {
-    if !contributors_set.contains(contributor) {
+    if !contributors_set.contains(contributor) && !contributor.is_empty() {
       contributors_set.insert(contributor);
     }
   });
